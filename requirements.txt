@@ -1,0 +1,2 @@
+rally==1.1.0
+rally-openstack==1.2.0
