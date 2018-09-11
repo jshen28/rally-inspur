@@ -18,7 +18,7 @@ class PepperExecutor(object):
         this function does not provide error handling,
         so user should handle them accordingly
         :param [] cmd: a list of commands
-        :return:
+        :return: generator of salt cmd result
         """
 
         os.environ['SALTAPI_URL'] = self.uri
@@ -39,14 +39,4 @@ class PepperExecutor(object):
                 yield json.loads(result)
             else:
                 raise Exception('error executing command')
-
-
-pe = PepperExecutor(uri='http://10.110.25.118:6969', passwd='iBqfXC9QQBhdi8C8XmrkeClF45qyTaGq')
-
-target = '*'
-cmd1 = 'cmd.run'
-cmd2 = 'echo "hello world"'
-
-for i in pe.execute([target, cmd1, cmd2]):
-    print(i)
 
