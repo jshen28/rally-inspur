@@ -50,13 +50,15 @@ class BootServer(utils.NovaScenario):
 
         pe = PepperExecutor(uri=salt_api_url, passwd=salt_passwd)
         try:
-            pe.execute(execute_before)
+            for i in pe.execute(execute_before):
+                print(i)
             self._boot_server(image, flavor,
                               auto_assign_nic=auto_assign_nic, **kwargs)
         except Exception as e:
             print(e)
         finally:
             try:
-                pe.execute(execute_after)
+                for i in pe.execute(execute_after):
+                    print(i)
             except Exception as e:
                 print(e)
