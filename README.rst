@@ -2,7 +2,7 @@
 RALLY PLUGIN
 ===============
 
-A collection of rally plugins with intergration of saltstack pepper
+A collection of rally plugins with saltstack pepper support
 
 INSTALLATION
 ---------------
