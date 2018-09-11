@@ -71,11 +71,31 @@ class PepperGenerator(context.Context):
         self.pe = PepperExecutor(uri=salt_api_url, passwd=salt_passwd)
 
     def setup(self):
+        """
+        setup context
+        :return:
+        """
         cmd = self.config['execute_at_setup']
-        for i in self.pe.execute(cmd):
-            print(i)
+        cleanup = False
+        try:
+            for i in self.pe.execute(cmd):
+                print(i)
+        except Exception as e:
+            cleanup = True
+            print(e)
+        finally:
+            if cleanup:
+                self.cleaup()
 
     def cleanup(self):
+        """
+        cleanup context
+        :return:
+        """
         cmd = self.config['execute_at_cleanup']
-        for i in self.pe.execute(cmd):
-            print(i)
+        try:
+            for i in self.pe.execute(cmd):
+                print(i)
+        except Exception as e:
+            # if exception happend
+            print(e)
