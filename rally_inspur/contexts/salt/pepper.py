@@ -57,7 +57,7 @@ class PepperGenerator(context.Context):
                      "description": "pepper command to be executed during setup"
                  },
                  "execute_at_cleanup": {
-                     "type": "list",
+                     "type": "array",
                      "description": "pepper command to be executed during cleanup"},
                  },
             "additionalProperties": False}
