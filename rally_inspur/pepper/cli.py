@@ -32,7 +32,10 @@ class PepperExecutor(object):
         elif isinstance(cmd, tuple):
             cmd = list(cmd)
 
-        sys.argv = sys.argv + cmd
+        # workaround to override all existing options
+        # existing option has two sources: 1. pass-in as executing command
+        # 2. previously invoking this method
+        sys.argv = [sys.argv[0]] + cmd
 
         cli = PepperCli()
         for exit_code, result in cli.run():
