@@ -29,6 +29,8 @@ class PepperExecutor(object):
         # manually assemble pass-in values
         if not isinstance(cmd, (list, tuple)):
             cmd = [cmd]
+        elif isinstance(cmd, tuple):
+            cmd = list(cmd)
 
         sys.argv = sys.argv + cmd
 
