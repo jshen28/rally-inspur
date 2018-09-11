@@ -27,4 +27,7 @@ class ListServers(utils.NovaScenario):
                          should be listed
         """
         servers = self._list_servers(detailed)
+
+        # this should print number of servers in project
+        # in a separate line
         print(len(servers))
