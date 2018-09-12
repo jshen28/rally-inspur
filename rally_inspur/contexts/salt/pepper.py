@@ -83,6 +83,7 @@ class PepperGenerator(context.Context):
         except Exception as e:
             cleanup = True
             print(e)
+            raise e
         finally:
             if cleanup:
                 self.cleaup()

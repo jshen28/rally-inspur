@@ -9,5 +9,4 @@ if __name__ == '__main__':
     cmd1 = 'cmd.run'
     cmd2 = 'echo "hello world"'
 
-    for i in pe.execute(['*', 'test.ping']):
-        print(i)
+    print(pe.execute(['*', 'test.ping']))

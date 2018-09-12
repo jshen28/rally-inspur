@@ -56,6 +56,7 @@ class BootServer(utils.NovaScenario):
                               auto_assign_nic=auto_assign_nic, **kwargs)
         except Exception as e:
             print(e)
+            raise e
         finally:
             try:
                 for i in pe.execute(execute_after):

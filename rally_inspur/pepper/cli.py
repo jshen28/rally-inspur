@@ -7,6 +7,13 @@ import json
 class PepperExecutor(object):
 
     def __init__(self, uri=None, eauth='pam', user='salt', passwd=None):
+        """
+        https://github.com/saltstack/pepper
+        :param uri:
+        :param eauth:
+        :param user:
+        :param passwd:
+        """
         self.uri = uri
         self.eauth = eauth
         self.user = user
@@ -33,15 +40,17 @@ class PepperExecutor(object):
             cmd = list(cmd)
 
         # workaround to override all existing options
-        # existing option has two sources: 1. pass-in as executing command
-        # 2. previously invoking this method
+        # existing option has two sources: 1. pass-in as command to be executed
+        # 2. this method has been previously invoked
         sys.argv = [sys.argv[0]] + cmd
 
+        result_list = []
         cli = PepperCli()
         for exit_code, result in cli.run():
             if exit_code == 0:
                 # print(result)
-                yield json.loads(result)
+                result_list.append(json.loads(result))
             else:
                 raise Exception('error executing command')
+        return result_list
 
