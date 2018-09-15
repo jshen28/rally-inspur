@@ -32,8 +32,50 @@ class ShakerManager(manager.VerifierManager):
         pass
 
     def run(self, context):
+        """
+        .. code-block:: none
+
+            <object>.totals = {
+              "tests_count": <total tests count>,
+              "tests_duration": <total tests duration>,
+              "failures": <total count of failed tests>,
+              "skipped": <total count of skipped tests>,
+              "success": <total count of successful tests>,
+              "unexpected_success":
+                  <total count of unexpected successful tests>,
+              "expected_failures": <total count of expected failed tests>
+            }
+
+            <object>.tests = {
+              <test_id>: {
+                  "status": <test status>,
+                  "name": <test name>,
+                  "duration": <test duration>,
+                  "reason": <reason>,  # optional
+                  "traceback": <traceback>  # optional
+              },
+              ...
+            }
+        :param context:
+        :return:
+        """
+
         print("I am running")
-        return ManagerResult({}, {})
+        return ManagerResult({
+            "tests_count": 1,
+            "tests_duration": 1.5,
+            "failures": 0,
+            "skipped": 0,
+            "success": 1,
+            "unexpected_success": 0,
+            "expected_failures": 0
+        }, {
+            "1": {
+                "status": "success",
+                "name": "test",
+                "duration": 1.5
+            }
+        })
 
     def install_extension(self, source, version=None, extra_settings=None):
         pass
