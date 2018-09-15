@@ -33,12 +33,16 @@ class ShakerManager(manager.VerifierManager):
 
     def run(self, context):
         print("I am running")
-        return {
-            "totals": {},
-            "tests": {}
-        }
+        return ManagerResult({}, {})
 
     def install_extension(self, source, version=None, extra_settings=None):
         pass
 
+
+class ManagerResult(object):
+    """result object"""
+
+    def __init__(self, totals, results):
+        self.totals = totals
+        self.results = results
 
