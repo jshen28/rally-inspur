@@ -8,6 +8,12 @@ class ShakerManager(manager.VerifierManager):
     """shaker test manager"""
 
     def __init__(self, *args, **kwargs):
+        """
+        manager.configure will clone default_repo and install a virtual
+        environment along verifier creation
+        :param args:
+        :param kwargs:
+        """
         super(ShakerManager, self).__init__(*args, **kwargs)
 
     def override_configuration(self, new_configuration):
@@ -27,6 +33,10 @@ class ShakerManager(manager.VerifierManager):
 
     def run(self, context):
         print("I am running")
+        return {
+            "total": {},
+            "tests": {}
+        }
 
     def install_extension(self, source, version=None, extra_settings=None):
         pass
