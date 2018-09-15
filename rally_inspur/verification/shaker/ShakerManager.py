@@ -1,6 +1,10 @@
 from rally.verification import manager
+from rally.cli import cliutils
 
 
+@cliutils.args("--zones", dest="zones", type=list,
+               metavar="<az>", required=False,
+               help="availability zones")
 @manager.configure(name="shaker", platform="openstack",
                    default_repo="https://github.com/openstack/shaker.git",
                    context={})
@@ -60,7 +64,10 @@ class ShakerManager(manager.VerifierManager):
         :return:
         """
 
-        print("I am running")
+        run_args = context.get("run_args", {})
+        zones = run_args.get('zones', [])
+
+        print("I am running", zones)
         return ManagerResult({
             "tests_count": 1,
             "tests_duration": 1.5,
