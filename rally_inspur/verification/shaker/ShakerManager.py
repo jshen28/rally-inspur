@@ -2,9 +2,9 @@ from rally.verification import manager
 from rally.cli import cliutils
 
 
-# @cliutils.args("--zones", dest="zones", type=list,
-#                metavar="<az>", required=False,
-#                help="availability zones")
+@cliutils.args("--zones", dest="zones", type=list,
+               metavar="<az>", required=False,
+               help="availability zones")
 @manager.configure(name="shaker", platform="openstack",
                    default_repo="https://github.com/openstack/shaker.git",
                    context={})
