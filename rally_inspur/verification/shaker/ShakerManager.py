@@ -42,7 +42,7 @@ class ShakerManager(manager.VerifierManager):
 class ManagerResult(object):
     """result object"""
 
-    def __init__(self, totals, results):
+    def __init__(self, totals, tests):
         self.totals = totals
-        self.results = results
+        self.tests = tests
 
