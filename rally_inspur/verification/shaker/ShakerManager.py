@@ -34,7 +34,7 @@ class ShakerManager(manager.VerifierManager):
     def run(self, context):
         print("I am running")
         return {
-            "total": {},
+            "totals": {},
             "tests": {}
         }
 
