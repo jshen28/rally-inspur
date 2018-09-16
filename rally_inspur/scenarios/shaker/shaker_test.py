@@ -21,7 +21,7 @@ class ShakerTest(utils.NovaScenario):
         :param kwargs:
         :return:
         """
-        context = self.context['admin']
+        context = self.context['admin']['credential']
         os.environ['OS_USERNAME'] = context.get('username')
         os.environ['OS_PASSWORD'] = context.get('password')
         os.environ['OS_CACERT'] = context.get('https_cacert')
