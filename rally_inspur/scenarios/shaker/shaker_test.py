@@ -25,7 +25,7 @@ class ShakerTest(utils.NovaScenario):
         os.environ['OS_USERNAME'] = context.get('username')
         os.environ['OS_PASSWORD'] = context.get('password')
         os.environ['OS_CACERT'] = context.get('https_cacert')
-        os.environ['OS_INSECURE'] = True
+        os.environ['OS_INSECURE'] = 'True'
         os.environ['OS_REGION_NAME'] = context.get('region_name')
         os.environ['OS_AUTH_URL'] = context.get('auth_url')
 
