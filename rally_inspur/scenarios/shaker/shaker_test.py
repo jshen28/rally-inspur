@@ -5,7 +5,6 @@ import os
 from jinja2 import Environment, FileSystemLoader
 import yaml
 import shaker
-import subprocess
 
 
 @scenario.configure(context={"cleanup@openstack": ["nova"]},
@@ -16,15 +15,51 @@ class ShakerTest(utils.NovaScenario):
 
     TEMPLATE_PATH = '%s/scenarios/shaker/scenarios/openstack'
 
-    def run(self, zones=list(), scenario=None, **kwargs):
+    def setup_env(self, **kwargs):
+        """
+        setup environment variables
+        :param kwargs:
+        :return:
+        """
+        context = self.context['admin']
+        os.environ['OS_USERNAME'] = context.get('username')
+        os.environ['OS_PASSWORD'] = context.get('password')
+        os.environ['OS_CACERT'] = context.get('https_cacert')
+        os.environ['OS_INSECURE'] = True
+        os.environ['OS_REGION_NAME'] = context.get('region_name')
+        os.environ['OS_AUTH_URL'] = context.get('auth_url')
+
+        if kwargs.get('external_net'):
+            os.environ['SHAKER_EXTERNAL_NET'] = kwargs.get('external_net')
+
+    @staticmethod
+    def execute_cmd(cmd):
+        from subprocess import Popen, PIPE
+        ps = Popen(cmd, stdout=PIPE, universal_newlines=True)
+        for stdout_line in iter(ps.stdout.readline, ""):
+            print(stdout_line.strip('\n'))
+        ps.stdout.close()
+        return_code = ps.wait()
+        return return_code
+
+    def run(self, zones=list(), scenario=None, endpoint=None, **kwargs):
+        """
+        run shaker test
+        :param zones: availability zones
+        :param scenario: scenarios
+        :param kwargs: extra parameters
+        :return:
+        """
+
+        self.setup_env(**kwargs)
 
         context = self.context
         print(context)
 
-        accommodation = ['pair', 'single_pair']
+        accommodation = ['pair', 'single_room']
 
-        if not scenario:
-            print('scenario may not be none')
+        if not scenario or not endpoint:
+            print('scenario/endpoint may not be none')
             return
 
         module_folder = os.path.dirname(rally_inspur.__file__)
@@ -49,8 +84,8 @@ class ShakerTest(utils.NovaScenario):
         #with open(shaker_scenario_file_path, 'w') as f:
         #    f.write(output_from_parsed_template)
 
-        # p = subprocess.Popen(['shaker'], stdout=subprocess.PIPE)
-        # result, exit_code = p.communicate()
+        # cmd = ['shaker', '--server-endpoint', endpoint, '--scenario', 'openstack/%s' % scenario]
+        # code = ShakerTest.execute_cmd(cmd)
 
 
 
