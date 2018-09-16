@@ -32,6 +32,15 @@ class ShakerTest(utils.NovaScenario):
         if kwargs.get('external_net'):
             os.environ['SHAKER_EXTERNAL_NET'] = kwargs.get('external_net')
 
+        if kwargs.get('report'):
+            os.environ['SHAKER_REPORT'] = kwargs.get('report')
+
+        if kwargs.get('book'):
+            os.environ['SHAKER_BOOK'] = kwargs.get('book')
+
+        if kwargs.get('output'):
+            os.environ['SHAKER_OUTPUT'] = kwargs.get('output')
+
     @staticmethod
     def execute_cmd(cmd):
         from subprocess import Popen, PIPE
@@ -79,13 +88,16 @@ class ShakerTest(utils.NovaScenario):
         output_from_parsed_template = template.render(accommodation=yaml.safe_dump(accommodation))
         print(output_from_parsed_template)
 
-        #shaker_scenario_file_path = "%s/scenarios/openstack/%s.yaml" % (os.path.dirname(shaker.__file__), scenario)
+        shaker_scenario_file_path = "%s/scenarios/openstack/%s.yaml" % (os.path.dirname(shaker.__file__), scenario)
 
-        #with open(shaker_scenario_file_path, 'w') as f:
-        #    f.write(output_from_parsed_template)
+        with open(shaker_scenario_file_path, 'w') as f:
+            f.write(output_from_parsed_template)
 
-        # cmd = ['shaker', '--server-endpoint', endpoint, '--scenario', 'openstack/%s' % scenario]
-        # code = ShakerTest.execute_cmd(cmd)
+        cmd = ['shaker', '--server-endpoint', endpoint, '--scenario', 'openstack/%s' % scenario]
+        code = ShakerTest.execute_cmd(cmd)
+
+        if code > 0:
+            raise Exception('shaker test failed')
 
 
 
