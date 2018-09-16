@@ -8,7 +8,8 @@ description:
 
 deployment:
   template: l2.hot
-  accommodation: [pair, single_room, zones=[{{ zone_sr }}, {{ zone_dst }}]]
+  accommodation:
+    {{ accommodation|indent(4) }}
 
 execution:
   progression: quadratic
