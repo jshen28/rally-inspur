@@ -3,3 +3,4 @@ rally-openstack==1.2.0
 salt-pepper==0.5.2
 jinja2
 pyshaker
+requests

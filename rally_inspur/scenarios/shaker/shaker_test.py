@@ -1,10 +1,14 @@
 from rally_openstack import scenario
 from rally_openstack.scenarios.nova import utils
+from oslo_log import log
 import rally_inspur
 import os
 from jinja2 import Environment, FileSystemLoader
 import yaml
 import shaker
+
+
+LOG = log.getLogger(__name__)
 
 
 @scenario.configure(context={"cleanup@openstack": ["nova"]},
@@ -46,7 +50,7 @@ class ShakerTest(utils.NovaScenario):
         from subprocess import Popen, PIPE
         ps = Popen(cmd, stdout=PIPE, universal_newlines=True)
         for stdout_line in iter(ps.stdout.readline, ""):
-            print(stdout_line.strip('\n'))
+            LOG.info(stdout_line.strip('\n'))
         ps.stdout.close()
         return_code = ps.wait()
         return return_code
@@ -62,9 +66,6 @@ class ShakerTest(utils.NovaScenario):
 
         self.setup_env(**kwargs)
 
-        context = self.context
-        print(context)
-
         accommodation = ['pair', 'single_room']
 
         if not scenario or not endpoint:
@@ -75,7 +76,7 @@ class ShakerTest(utils.NovaScenario):
         template_path = ShakerTest.TEMPLATE_PATH % module_folder
 
         if not os.path.exists(template_path):
-            print('file does not exist')
+            LOG.error('file does not exist')
             return
 
         if len(zones) > 0:
