@@ -33,13 +33,22 @@ class ShakerTest(utils.NovaScenario):
             os.environ['SHAKER_EXTERNAL_NET'] = kwargs.get('external_net')
 
         if kwargs.get('report'):
+            ShakerTest.mkdir(os.path.dirname(kwargs.get('report')))
             os.environ['SHAKER_REPORT'] = kwargs.get('report')
 
         if kwargs.get('book'):
+            ShakerTest.mkdir(kwargs.get('book'))
             os.environ['SHAKER_BOOK'] = kwargs.get('book')
 
         if kwargs.get('output'):
+            ShakerTest.mkdir(os.path.dirname(kwargs.get('output')))
             os.environ['SHAKER_OUTPUT'] = kwargs.get('output')
+
+    @staticmethod
+    def mkdir(folder_path):
+        code = ShakerTest.execute_cmd(['mkdir', '-p', folder_path])
+        if code > 0:
+            raise Exception('cannot create folder %s' % folder_path)
 
     @staticmethod
     def execute_cmd(cmd):
@@ -56,6 +65,7 @@ class ShakerTest(utils.NovaScenario):
         run shaker test
         :param zones: availability zones
         :param scenario: scenarios
+        :param endpoint: endpoint
         :param kwargs: extra parameters
         :return:
         """
