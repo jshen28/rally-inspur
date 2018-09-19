@@ -1,12 +1,16 @@
 
 from rally.task import types
 from rally.task import validation
+from rally.common import logging, opts
 
 from rally_openstack import consts
 from rally_openstack import scenario
 from rally_openstack.scenarios.nova import utils
 
 from rally_inspur.pepper.cli import PepperExecutor
+
+LOG = logging.getLogger(__name__)
+CONF = opts.CONF
 
 
 @types.convert(image={"type": "glance_image"},
@@ -20,7 +24,8 @@ from rally_inspur.pepper.cli import PepperExecutor
                     platform="openstack")
 class NovaApiHa(utils.NovaScenario):
 
-    def run(self, image, flavor, auto_assign_nic=False, salt_passwd=None, salt_api_url=None, ctl_nodes=list(), **kwargs):
+    def run(self, image, flavor, auto_assign_nic=False,
+            salt_passwd=CONF.salt_passwd, salt_api_url=CONF.salt_api_uri, ctl_nodes=list(), **kwargs):
 
         # Get number of all clt nodes
         conductor_services = self.admin_clients("nova").services.list(binary='nova-conductor')

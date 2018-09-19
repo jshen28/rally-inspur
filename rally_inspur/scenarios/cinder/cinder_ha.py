@@ -12,7 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from rally.common import logging
+from rally.common import logging, opts
 from rally.task import types
 from rally.task import validation
 
@@ -22,6 +22,7 @@ from rally_openstack.scenarios.cinder import utils as cinder_utils
 from rally_inspur.pepper.cli import PepperExecutor
 
 
+CONF = opts.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -34,7 +35,7 @@ LOG = logging.getLogger(__name__)
                     platform="openstack")
 class CinderVolumeHa(cinder_utils.CinderBasic):
 
-    def run(self, size, image=None, salt_api_url=None, salt_user_passwd=None, **kwargs):
+    def run(self, size, image=None, salt_api_url=CONF.salt_api_uri, salt_user_passwd=CONF.salt_passwd, **kwargs):
         """Create a volume and list all volumes.
 
         Measure the "cinder volume-list" command performance.
@@ -90,7 +91,7 @@ class CinderVolumeHa(cinder_utils.CinderBasic):
                     platform="openstack")
 class CinderSchedulerHa(cinder_utils.CinderBasic):
 
-    def run(self, size, image=None, salt_api_url=None, salt_user_passwd=None, **kwargs):
+    def run(self, size, image=None, salt_api_url=CONF.salt_api_uri, salt_user_passwd=CONF.salt_passwd, **kwargs):
         """Create a volume and list all volumes.
 
         Measure the "cinder volume-list" command performance.
@@ -146,7 +147,7 @@ class CinderSchedulerHa(cinder_utils.CinderBasic):
                     platform="openstack")
 class CinderApiHa(cinder_utils.CinderBasic):
 
-    def run(self, size, image=None, salt_api_url=None, salt_user_passwd=None, **kwargs):
+    def run(self, size, image=None, salt_api_url=CONF.salt_api_uri, salt_user_passwd=CONF.salt_passwd, **kwargs):
         """Create a volume and list all volumes.
 
         Measure the "cinder volume-list" command performance.

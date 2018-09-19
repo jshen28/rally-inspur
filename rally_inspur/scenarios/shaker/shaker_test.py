@@ -1,6 +1,6 @@
 from rally_openstack import scenario
 from rally_openstack.scenarios.nova import utils
-from oslo_log import log
+from rally.common import opts, logging
 import rally_inspur
 import os
 from jinja2 import Environment, FileSystemLoader
@@ -8,7 +8,8 @@ import yaml
 import shaker
 
 
-LOG = log.getLogger(__name__)
+LOG = logging.getLogger(__name__)
+CONF = opts.CONF
 
 
 @scenario.configure(context={"cleanup@openstack": ["nova"]},

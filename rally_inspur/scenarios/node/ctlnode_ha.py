@@ -4,10 +4,11 @@ from rally.task import validation
 
 from rally_openstack import consts
 from rally_openstack import scenario
-from oslo_log import log as logging
 from rally_inspur.pepper.cli import PepperExecutor
+from rally.common import logging, opts
 
 LOG = logging.getLogger(__name__)
+CONF = opts.CONF
 
 
 @types.convert(image={"type": "glance_image"},
@@ -21,7 +22,12 @@ LOG = logging.getLogger(__name__)
                     platform="openstack")
 class ControllerNodeHa(BasicNovaHa):
 
-    def run(self, image, flavor, hosts=list(['kvm01', 'kvm02', 'kvm03']), salt_passwd=None, salt_api_uri=None, **kwargs):
+    def run(self, image, flavor, hosts=list(['kvm01', 'kvm02', 'kvm03']),
+            salt_passwd=CONF.salt_passwd, salt_api_uri=CONF.salt_api_uri, **kwargs):
+        kwargs.update({
+            "image": image,
+            "flavor": flavor
+        })
         pe = PepperExecutor(uri=salt_api_uri, passwd=salt_passwd)
         hosts = hosts or [i.host for i in self.admin_clients('nova').services.list(binary='nova-conductor')]
         index = 1

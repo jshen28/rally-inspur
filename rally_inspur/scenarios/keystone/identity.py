@@ -1,15 +1,16 @@
 from rally.task import validation
+from rally.common import logging, opts
 
 from rally_openstack import scenario
 from rally_openstack import consts
 from rally_openstack.services.identity import identity
 from rally_openstack.scenarios.keystone.basic import KeystoneBasic
 from rally_openstack.scenarios.nova import utils
-from oslo_log import log
 
 from rally_inspur.pepper.cli import PepperExecutor
 
-LOG = log.getLogger(__name__)
+LOG = logging.getLogger(__name__)
+CONF = opts.CONF
 
 
 @validation.add("required_services", services=[consts.Service.NOVA, consts.Service.KEYSTONE])
@@ -19,7 +20,7 @@ LOG = log.getLogger(__name__)
                     platform="openstack")
 class KeystoneHa(KeystoneBasic, utils.NovaScenario):
 
-    def run(self, binary="apache2", salt_api_uri=None, salt_user_passwd=None, **kwargs):
+    def run(self, binary="apache2", salt_api_uri=CONF.salt_api_uri, salt_user_passwd=CONF.salt_passwd, **kwargs):
         """verify keystone availability
 
         :param binary: service name

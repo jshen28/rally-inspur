@@ -1,24 +1,21 @@
-from rally.common import logging
+from rally.common import logging, opts
 from rally.task import types
 from rally.task import validation
 
 from rally_openstack import consts
 from rally_openstack import scenario
-from rally_openstack.scenarios.nova import utils as nova_utils
-from rally_openstack.services.image import glance_v2
-from rally_openstack.services.image import image
 from rally_openstack.scenarios.glance.images import GlanceBasic
 
 from rally_inspur.pepper.cli import PepperExecutor
-
 from abc import abstractmethod
 
+CONF = opts.CONF
 LOG = logging.getLogger(__name__)
 
 
 class GlanceHa(GlanceBasic):
 
-    def _run(self, salt_api_uri=None, salt_user_passwd=None, binary="glance-api", **kwargs):
+    def _run(self, salt_api_uri=CONF.salt_api_uri, salt_user_passwd=CONF.salt_passwd, binary="glance-api", **kwargs):
         """verify glance service availability
 
         :param salt_api_uri: salt api uri

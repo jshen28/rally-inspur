@@ -18,8 +18,7 @@ from rally.task import validation, types
 from rally_openstack import consts
 from rally_openstack import scenario
 from rally_openstack.scenarios.neutron import utils
-from oslo_log import log as logging
-from rally.common import cfg
+from rally.common import cfg, logging
 
 CONF = cfg.CONF
 
@@ -211,9 +210,11 @@ class NeutronHaTest(utils.NeutronScenario, utils.NovaScenario):
                     platform="openstack")
 class NeutronServerHa(NeutronHaTest):
 
-    def run(self, network_create_args=None, salt_api_uri=None, salt_user_passwd=None):
+    def run(self, network_create_args=None, salt_api_uri=CONF.salt_api_uri, salt_user_passwd=CONF.salt_passwd):
         """verify neutron server availability
 
+        :param salt_api_uri
+        :param salt_passwd
         :param network_create_args: dict, POST /v2.0/networks request options
         """
 
@@ -247,7 +248,8 @@ class NeutronServerHa(NeutronHaTest):
                     platform="openstack")
 class NeutronDhcpAgentHa(NeutronHaTest):
 
-    def run(self, image, flavor, network_create_args=None, salt_api_uri=None, salt_user_passwd=None, **kwargs):
+    def run(self, image, flavor, network_create_args=None,
+            salt_api_uri=CONF.salt_api_uri, salt_user_passwd=CONF.salt_passwd, **kwargs):
         """verify neutron dhcp agent availability
 
         :param image: image name (will be auto converted to id)
@@ -305,7 +307,8 @@ class NeutronDhcpAgentHa(NeutronHaTest):
                     platform="openstack")
 class NeutronL3AgentHa(NeutronHaTest):
 
-    def run(self, image, flavor, username='cirros', password='cubswin:)', network_create_args=None, router_create_args=None, salt_api_uri=None, salt_user_passwd=None, **kwargs):
+    def run(self, image, flavor, username='cirros', password='cubswin:)', network_create_args=None, router_create_args=None,
+            salt_api_uri=CONF.salt_api_uri, salt_user_passwd=CONF.salt_passwd, **kwargs):
         """verify neutron l3 agent availability
 
         :param image: image name (will be auto converted to id)
@@ -378,7 +381,7 @@ class NeutronL3AgentHa(NeutronHaTest):
 class NeutronOvsAgentHa(NeutronHaTest):
 
     def run(self, image, flavor, username='cirros', password='cubswin:)', network_create_args=None,
-            salt_api_uri=None, salt_user_passwd=None, **kwargs):
+            salt_api_uri=CONF.salt_api_uri, salt_user_passwd=CONF.salt_passwd, **kwargs):
         """verify neutron ovs agent availability.
 
         :param image: image name (will be auto converted to id)
@@ -466,7 +469,7 @@ class NeutronOvsAgentHa(NeutronHaTest):
 class NeutronMetadataAgentHa(NeutronHaTest):
 
     def run(self, image, flavor, username='cirros', password='cubswin:)', network_create_args=None,
-            salt_api_uri=None, salt_user_passwd=None, **kwargs):
+            salt_api_uri=CONF.salt_api_uri, salt_user_passwd=CONF.salt_passwd, **kwargs):
         """verify neutron metdata service availability
 
         :param image: image name (will be auto converted to id)

@@ -5,9 +5,10 @@ from rally_inspur.pepper.cli import PepperExecutor
 from rally_openstack import consts
 from rally_openstack import scenario
 from rally_openstack.scenarios.nova import utils
-from oslo_log import log
+from rally.common import logging, opts
 
-LOG = log.getLogger(__name__)
+LOG = logging.getLogger(__name__)
+CONF = opts.CONF
 
 
 @types.convert(image={"type": "glance_image"},
@@ -21,7 +22,7 @@ LOG = log.getLogger(__name__)
                     platform="openstack")
 class NovaSchedulerHa(utils.NovaScenario):
 
-    def run(self, image, flavor, salt_passwd=None, salt_api_url=None, **kwargs):
+    def run(self, image, flavor, salt_passwd=CONF.salt_passwd, salt_api_url=CONF.salt_api_uri, **kwargs):
 
         # match suffix
         ctl_nodes = [i.host + "*" for i in self.admin_clients("nova").services.list(binary='nova-scheduler')]
@@ -63,7 +64,8 @@ class NovaSchedulerHa(utils.NovaScenario):
                     platform="openstack")
 class NovaConsoleauthHa(utils.NovaScenario):
 
-    def run(self, image, flavor, salt_passwd=None, salt_api_url=None, console_type='novnc', **kwargs):
+    def run(self, image, flavor, salt_passwd=CONF.salt_passwd, salt_api_url=CONF.salt_api_uri,
+            console_type='novnc', **kwargs):
 
         # match suffix
         ctl_nodes = [i.host + "*" for i in self.admin_clients("nova").services.list(binary='nova-consoleauth')]
@@ -125,7 +127,7 @@ class NovaComputeHa(utils.NovaScenario):
             if not ignore_error:
                raise e
 
-    def run(self, image, flavor, salt_passwd=None, salt_api_url=None, console_type='novnc', **kwargs):
+    def run(self, image, flavor, salt_passwd=CONF.salt_passwd, salt_api_url=CONF.salt_api_uri, **kwargs):
 
         pe = PepperExecutor(uri=salt_api_url, passwd=salt_passwd)
         cmp_nodes = []

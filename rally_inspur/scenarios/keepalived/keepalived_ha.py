@@ -1,9 +1,12 @@
 from rally_inspur.scenarios.utils.basic_ha import BasicNovaHa
 from rally.task import types
 from rally.task import validation
+from rally.common import opts
 
 from rally_openstack import consts
 from rally_openstack import scenario
+
+CONF = opts.CONF
 
 
 @types.convert(image={"type": "glance_image"},
@@ -17,7 +20,7 @@ from rally_openstack import scenario
                     platform="openstack")
 class RabbitmqHa(BasicNovaHa):
 
-    def run(self, image, flavor, hosts=None, salt_passwd=None, salt_api_url=None, **kwargs):
+    def run(self, image, flavor, hosts=None, salt_passwd=CONF.salt_passwd, salt_api_url=CONF.salt_api_uri, **kwargs):
         kwargs.update({
             "image": image,
             "flavor": flavor,
