@@ -19,6 +19,7 @@ from rally.task import validation
 from rally_openstack import consts
 from rally_openstack import scenario
 from rally_openstack.scenarios.cinder import utils as cinder_utils
+from rally_openstack.scenarios.nova import utils as nova_utils
 from rally_inspur.pepper.cli import PepperExecutor
 
 
@@ -26,14 +27,7 @@ CONF = opts.CONF
 LOG = logging.getLogger(__name__)
 
 
-@types.convert(image={"type": "glance_image"})
-@validation.add("image_exists", param_name="image", nullable=True)
-@validation.add("required_services", services=[consts.Service.CINDER])
-@validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["cinder"]},
-                    name="InspurPlugin.cinder_volume_ha",
-                    platform="openstack")
-class CinderVolumeHa(cinder_utils.CinderBasic):
+class CinderVolumeHaDeprecated(cinder_utils.CinderBasic):
 
     def run(self, size, image=None, salt_api_url=CONF.salt_api_uri, salt_user_passwd=CONF.salt_passwd, **kwargs):
         """Create a volume and list all volumes.
@@ -80,6 +74,85 @@ class CinderVolumeHa(cinder_utils.CinderBasic):
             for host in hosts:
                 if host.state != 'up':
                     pe.execute([host + '*', 'cmd.run', 'systemctl start cinder-volume'])
+
+
+@types.convert(image={"type": "glance_image"},
+               flavor={"type": "nova_flavor"})
+@validation.add("restricted_parameters", param_names=["name", "display_name"],
+                subdict="create_volume_params")
+@validation.add("image_valid_on_flavor", flavor_param="flavor",
+                image_param="image")
+@validation.add("required_services", services=[consts.Service.NOVA,
+                                               consts.Service.CINDER])
+@validation.add("required_platform", platform="openstack", users=True)
+@scenario.configure(context={"cleanup@openstack": ["cinder", "nova"]},
+                    name="InspurPlugin.cinder_volume_ha",
+                    platform="openstack")
+class CreateAndAttachVolume(cinder_utils.CinderBasic,
+                            nova_utils.NovaScenario):
+
+    @logging.log_deprecated_args(
+        "Use 'create_vm_params' for additional instance parameters.",
+        "0.2.0", ["kwargs"], once=True)
+    def run(self, size, image, flavor, create_volume_params=None,
+            create_vm_params=None, salt_api_url=CONF.salt_api_uri, salt_user_passwd=CONF.salt_passwd, **kwargs):
+        """Create a VM and attach a volume to it.
+
+        Simple test to create a VM and attach a volume, then
+        detach the volume and delete volume/VM.
+
+        :param size: volume size (integer, in GB) or
+                     dictionary, must contain two values:
+                         min - minimum size volumes will be created as;
+                         max - maximum size volumes will be created as.
+        :param image: Glance image name to use for the VM
+        :param flavor: VM flavor name
+        :param create_volume_params: optional arguments for volume creation
+        :param create_vm_params: optional arguments for VM creation
+        :param salt_api_url
+        :param salt_user_passwd
+        :param kwargs: (deprecated) optional arguments for VM creation
+        """
+
+        pe = PepperExecutor(uri=salt_api_url, passwd=salt_user_passwd)
+
+        hosts = [i.host.split('@')[0] for i in self.admin_cinder.services.list(binary='cinder-volume')]
+
+        create_volume_params = create_volume_params or {}
+
+        if kwargs and create_vm_params:
+            raise ValueError("You can not set both 'kwargs'"
+                             "and 'create_vm_params' attributes."
+                             "Please use 'create_vm_params'.")
+
+        create_vm_params = create_vm_params or kwargs or {}
+
+        server = self._boot_server(image, flavor, **create_vm_params)
+        volume = self.cinder.create_volume(size, **create_volume_params)
+
+        try:
+            index = 1
+            for host in hosts:
+                index = index + 1
+                pe.execute([host + "*", 'cmd.run', 'systemctl stop cinder-volume'])
+                try:
+                    self._attach_volume(server, volume)
+                    self._detach_volume(server, volume)
+                except Exception as e:
+                    LOG.error(e)
+                    if index != len(hosts):
+                        raise e
+
+        except Exception as e:
+            LOG.error(e)
+        finally:
+            for host in hosts:
+                if host.state != 'up':
+                    pe.execute([host + '*', 'cmd.run', 'systemctl start cinder-volume'])
+            self._attach_volume(server, volume)
+            self._detach_volume(server, volume)
+            self.cinder.delete_volume(volume)
+            self._delete_server(server)
 
 
 @types.convert(image={"type": "glance_image"})
