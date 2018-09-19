@@ -57,7 +57,7 @@ class GlanceHa(GlanceBasic):
 
 @validation.add("required_services", services=[consts.Service.GLANCE])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(name="InspurPlugins.glance_api_ha",
+@scenario.configure(name="InspurPlugin.glance_api_ha",
                     platform="openstack")
 class GlanceApiHa(GlanceHa):
 
@@ -82,7 +82,7 @@ class GlanceApiHa(GlanceHa):
                kwargs={"type": "glance_image_args"})
 @validation.add("required_services", services=[consts.Service.GLANCE])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(name="InspurPlugins.glance_registry_ha",
+@scenario.configure(name="InspurPlugin.glance_registry_ha",
                     platform="openstack")
 class GlanceRegistryHa(GlanceHa):
 

@@ -207,7 +207,7 @@ class NeutronHaTest(utils.NeutronScenario, utils.NovaScenario):
 @validation.add("required_services",
                 services=[consts.Service.NEUTRON])
 @scenario.configure(context={"cleanup@openstack": ["neutron"]},
-                    name="InspurPlugins.neutron_server_ha",
+                    name="InspurPlugin.neutron_server_ha",
                     platform="openstack")
 class NeutronServerHa(NeutronHaTest):
 
@@ -243,7 +243,7 @@ class NeutronServerHa(NeutronHaTest):
 @validation.add("required_services",
                 services=[consts.Service.NEUTRON, consts.Service.NOVA])
 @scenario.configure(context={"cleanup@openstack": ["nova", "neutron"]},
-                    name="InspurPlugins.neutron_dhcp_agent_ha",
+                    name="InspurPlugin.neutron_dhcp_agent_ha",
                     platform="openstack")
 class NeutronDhcpAgentHa(NeutronHaTest):
 
@@ -301,7 +301,7 @@ class NeutronDhcpAgentHa(NeutronHaTest):
 @validation.add("required_services",
                 services=[consts.Service.NEUTRON, consts.Service.NOVA])
 @scenario.configure(context={"cleanup@openstack": ["nova", "neutron"]},
-                    name="InspurPlugins.neutron_l3_agent_ha",
+                    name="InspurPlugin.neutron_l3_agent_ha",
                     platform="openstack")
 class NeutronL3AgentHa(NeutronHaTest):
 
@@ -373,7 +373,7 @@ class NeutronL3AgentHa(NeutronHaTest):
 @validation.add("required_services",
                 services=[consts.Service.NEUTRON, consts.Service.NOVA])
 @scenario.configure(context={"cleanup@openstack": ["nova", "neutron"]},
-                    name="InspurPlugins.neutron_ovs_agent_ha",
+                    name="InspurPlugin.neutron_ovs_agent_ha",
                     platform="openstack")
 class NeutronOvsAgentHa(NeutronHaTest):
 
@@ -461,7 +461,7 @@ class NeutronOvsAgentHa(NeutronHaTest):
 @validation.add("required_services",
                 services=[consts.Service.NEUTRON, consts.Service.NOVA])
 @scenario.configure(context={"cleanup@openstack": ["nova", "neutron"]},
-                    name="InspurPlugins.neutron_metadata_agent_ha",
+                    name="InspurPlugin.neutron_metadata_agent_ha",
                     platform="openstack")
 class NeutronMetadataAgentHa(NeutronHaTest):
 

@@ -15,7 +15,7 @@ LOG = log.getLogger(__name__)
 @validation.add("required_services", services=[consts.Service.NOVA, consts.Service.KEYSTONE])
 @validation.add("required_platform", platform="openstack", admin=True)
 @scenario.configure(context={"admin_cleanup@openstack": ["keystone", "nova"]},
-                    name="InspurPlugins.keystone_ha",
+                    name="InspurPlugin.keystone_ha",
                     platform="openstack")
 class KeystoneHa(KeystoneBasic, utils.NovaScenario):
 

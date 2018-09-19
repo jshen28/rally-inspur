@@ -30,7 +30,7 @@ LOG = logging.getLogger(__name__)
 @validation.add("required_services", services=[consts.Service.CINDER])
 @validation.add("required_platform", platform="openstack", users=True)
 @scenario.configure(context={"cleanup@openstack": ["cinder"]},
-                    name="InspurPlugins.cinder_volume_ha",
+                    name="InspurPlugin.cinder_volume_ha",
                     platform="openstack")
 class CinderVolumeHa(cinder_utils.CinderBasic):
 
@@ -86,7 +86,7 @@ class CinderVolumeHa(cinder_utils.CinderBasic):
 @validation.add("required_services", services=[consts.Service.CINDER])
 @validation.add("required_platform", platform="openstack", users=True)
 @scenario.configure(context={"cleanup@openstack": ["cinder"]},
-                    name="InspurPlugins.cinder_scheduler_ha",
+                    name="InspurPlugin.cinder_scheduler_ha",
                     platform="openstack")
 class CinderSchedulerHa(cinder_utils.CinderBasic):
 
@@ -142,7 +142,7 @@ class CinderSchedulerHa(cinder_utils.CinderBasic):
 @validation.add("required_services", services=[consts.Service.CINDER])
 @validation.add("required_platform", platform="openstack", users=True)
 @scenario.configure(context={"cleanup@openstack": ["cinder"]},
-                    name="InspurPlugins.cinder_api_ha",
+                    name="InspurPlugin.cinder_api_ha",
                     platform="openstack")
 class CinderApiHa(cinder_utils.CinderBasic):
 
