@@ -16,9 +16,9 @@ CONF = opts.CONF
 @validation.add("required_services", services=[consts.Service.NOVA])
 @validation.add("required_platform", platform="openstack", users=True)
 @scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="InspurPlugin.keepalived_ha",
+                    name="InspurPlugin.rabbitmq_ha",
                     platform="openstack")
-class KeepalivedHa(BasicNovaHa):
+class RabbitmqHa(BasicNovaHa):
 
     def run(self, image, flavor, hosts=list(['msg01', 'msg02', 'msg03']),
             salt_passwd=CONF.salt_passwd, salt_api_url=CONF.salt_api_uri, **kwargs):
