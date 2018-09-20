@@ -205,24 +205,23 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
 
 
 @validation.add("required_services",
-                services=[consts.Service.NEUTRON])
-@scenario.configure(context={"cleanup@openstack": ["neutron"]},
+                services=[consts.Service.NOVA, consts.Service.NEUTRON])
+@scenario.configure(context={"cleanup@openstack": ["nova", "neutron"]},
                     name="InspurPlugin.neutron_server_ha",
                     platform="openstack")
-class NeutronServerHa(NeutronHaTest):
+class NeutronServerHa(NeutronHaTest, nova_utils.NovaScenario):
 
     def run(self, network_create_args=None, salt_api_uri=CONF.salt_api_uri, salt_user_passwd=CONF.salt_passwd):
         """verify neutron server availability
 
         :param salt_api_uri
-        :param salt_passwd
+        :param salt_user_passwd
         :param network_create_args: dict, POST /v2.0/networks request options
         """
 
         pe = PepperExecutor(uri=salt_api_uri, passwd=salt_user_passwd)
-        binary = 'neutron-dhcp-agent'
         index = 0
-        hosts = self._get_agent_hosts(binary=binary)
+        hosts = [i.host for i in self.admin_clients("nova").services.list(binary='nova-conductor')]
         try:
             for host, _ in hosts:
                 index = index + 1
