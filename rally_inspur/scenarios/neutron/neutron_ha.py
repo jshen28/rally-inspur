@@ -470,11 +470,15 @@ class NeutronOvsAgentHa(NeutronHaTest):
             # server02 is ok
             self._detach_nic(server02)
 
+            # fixme this is not correct.
+            import time
+            LOG.info('wait 60s allowing detaching successfully')
+            time.sleep(60)
+
             # restart ovs-agent
             pe.execute([hosts[0] + '*', 'cmd.run', 'systemctl start %s' % binary])
 
             # wait for 10s before continuing
-            import time
             time.sleep(10)
             LOG.info('waiting 10s for neutron-openvswitch-agent')
 
