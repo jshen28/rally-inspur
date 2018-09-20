@@ -52,6 +52,7 @@ class NovaApiHa(utils.NovaScenario):
             raise
         finally:
             for node in ctl_nodes:
+                LOG.info('restart nova-api on node %s' % node)
                 cmd = [node, 'cmd.run', 'systemctl start nova-api']
                 pe.execute(cmd)
 
