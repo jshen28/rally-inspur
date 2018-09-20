@@ -27,7 +27,7 @@ class BasicNovaHa(utils.NovaScenario):
         hosts = hosts or [i.host for i in self.admin_clients('nova').services.list(binary='nova-conductor')]
         cmd = kwargs.get('cmd')
         restore_cmd = kwargs.get('restore')
-        index = 1
+        index = 0
         try:
             for host in sorted(hosts):
                 index = index + 1

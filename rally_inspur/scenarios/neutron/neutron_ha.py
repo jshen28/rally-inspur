@@ -266,7 +266,7 @@ class NeutronDhcpAgentHa(NeutronHaTest):
         server = self._boot_server(image, flavor, **kwargs)
         pe = PepperExecutor(uri=salt_api_uri, passwd=salt_user_passwd)
         binary = 'nuetron-dhcp-agent'
-        index = 1
+        index = 0
         try:
             hosts = self._get_agent_hosts(network=network_id)
             LOG.debug('dhcp agents %s host network %s' % (hosts, network_id))
@@ -340,7 +340,7 @@ class NeutronL3AgentHa(NeutronHaTest):
         server = self._boot_server(image, flavor, **kwargs)
 
         binary = 'neutron-l3-agent'
-        index = 1
+        index = 0
         try:
             hosts = self._get_agent_hosts(router=router_id)
             LOG.debug('l3 agents %s host router %s' % (hosts, router_id))
@@ -495,7 +495,7 @@ class NeutronMetadataAgentHa(NeutronHaTest):
         server = self._boot_server(image, flavor, **kwargs)
 
         binary = 'neutron-metadata-agent'
-        index = 1
+        index = 0
         try:
             hosts = self._get_agent_hosts(binary=binary)
             LOG.debug('dhcp agents running on hosts: %s' % hosts)

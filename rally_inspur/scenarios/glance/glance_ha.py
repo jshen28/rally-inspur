@@ -26,7 +26,7 @@ class GlanceHa(GlanceBasic):
         pe = PepperExecutor(uri=salt_api_uri, passwd=salt_user_passwd)
         hosts = [i.host for i in self.admin_clients('nova').services.list(binary='nova-conductor')]
 
-        index = 1
+        index = 0
         try:
             for host in hosts:
 

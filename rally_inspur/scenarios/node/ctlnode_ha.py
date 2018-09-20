@@ -30,7 +30,7 @@ class ControllerNodeHa(BasicNovaHa):
         })
         pe = PepperExecutor(uri=salt_api_uri, passwd=salt_passwd)
         hosts = hosts or [i.host for i in self.admin_clients('nova').services.list(binary='nova-conductor')]
-        index = 1
+        index = 0
         try:
             for host in sorted(hosts):
                 index = index + 1

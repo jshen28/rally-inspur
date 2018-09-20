@@ -57,7 +57,7 @@ class CinderVolumeHaDeprecated(cinder_utils.CinderBasic):
         hosts = [i.host.split('@')[0] for i in self.admin_cinder.services.list(binary='cinder-volume')]
 
         try:
-            index = 1
+            index = 0
             for host in hosts:
                 index = index + 1
                 pe.execute([host + "*", 'cmd.run', 'systemctl stop cinder-volume'])
@@ -131,7 +131,7 @@ class CreateAndAttachVolume(cinder_utils.CinderBasic,
         volume = self.cinder.create_volume(size, **create_volume_params)
 
         try:
-            index = 1
+            index = 0
             for host in hosts:
                 index = index + 1
                 pe.execute([host + "*", 'cmd.run', 'systemctl stop cinder-volume'])
@@ -192,7 +192,7 @@ class CinderSchedulerHa(cinder_utils.CinderBasic):
         hosts = [i.host for i in self.admin_cinder.services.list(binary='cinder-scheduler')]
 
         try:
-            index = 1
+            index = 0
             for host in hosts:
                 index = index + 1
                 pe.execute([host + "*", 'cmd.run', 'systemctl stop cinder-scheduler'])
@@ -248,7 +248,7 @@ class CinderApiHa(cinder_utils.CinderBasic):
         hosts = [i.host for i in self.admin_cinder.services.list(binary='cinder-scheduler')]
 
         try:
-            index = 1
+            index = 0
             for host in hosts:
                 index = index + 1
                 pe.execute([host + "*", 'cmd.run', 'systemctl stop cinder-api'])

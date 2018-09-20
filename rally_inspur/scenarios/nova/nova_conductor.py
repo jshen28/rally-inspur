@@ -34,7 +34,7 @@ class NovaConductorHa(utils.NovaScenario):
                 index = index + 1
                 cmd = [node, 'cmd.run', 'systemctl stop nova-conductor']
                 pe.execute(cmd)
-                if index == (len(ctl_nodes) - 1):
+                if index == len(ctl_nodes):
                     try:
                         self._boot_server(image, flavor, **kwargs)
                     except Exception as e:

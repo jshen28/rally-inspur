@@ -34,7 +34,7 @@ class KeystoneHa(KeystoneBasic, utils.NovaScenario):
 
         hosts = [i.host for i in self.admin_clients('nova').services.list(binary='nova-conductor')]
 
-        index = 1
+        index = 0
         try:
             for host in hosts:
                 index = index + 1

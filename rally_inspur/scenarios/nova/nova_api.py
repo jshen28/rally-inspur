@@ -41,7 +41,7 @@ class NovaApiHa(utils.NovaScenario):
                 LOG.info('stop nova-api on %s' % node)
                 cmd = [node, 'cmd.run', 'systemctl stop nova-api']
                 pe.execute(cmd)
-                if index == (len(ctl_nodes) - 1):
+                if index == len(ctl_nodes):
                     self._boot_server_error(image, flavor,
                                             auto_assign_nic=auto_assign_nic, **kwargs)
                 else:
