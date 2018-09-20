@@ -29,6 +29,7 @@ class GlanceHa(GlanceBasic):
         index = 0
         try:
             for host in hosts:
+                index = index + 1
                 LOG.info('stop %s on host %s' % (binary, host))
 
                 pe.execute([host + "*", 'cmd.run', 'systemctl stop %s' % binary])
@@ -41,7 +42,7 @@ class GlanceHa(GlanceBasic):
         finally:
             # restore glance-api services
             for host in hosts:
-                LOG.info('stop %s on host %s' % (binary, host))
+                LOG.info('start %s on host %s' % (binary, host))
                 try:
                     pe.execute([host + "*", 'cmd.run', 'systemctl start %s' % binary])
                 except Exception as e:
