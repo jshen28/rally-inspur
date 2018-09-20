@@ -22,12 +22,13 @@ CONF = opts.CONF
                     platform="openstack")
 class NovaConductorHa(utils.NovaScenario):
 
-    def run(self, image, flavor, salt_passwd=CONF.salt_passwd, salt_api_url=CONF.salt_api_uri, **kwargs):
+    def run(self, image, flavor, block_migration=False, disk_over_commit=False, salt_passwd=CONF.salt_passwd, salt_api_url=CONF.salt_api_uri, **kwargs):
 
         # match suffix
         ctl_nodes = [i.host + "*" for i in self.admin_clients("nova").services.list(binary='nova-conductor')]
 
         pe = PepperExecutor(uri=salt_api_url, passwd=salt_passwd)
+        server = self._boot_server(image, flavor, **kwargs)
         index = 0
         try:
             for node in ctl_nodes:
@@ -37,12 +38,11 @@ class NovaConductorHa(utils.NovaScenario):
                 pe.execute(cmd)
                 if index == len(ctl_nodes):
                     try:
-                        self._boot_server(image, flavor, **kwargs)
+                        self._live_migrate(server, block_migration, disk_over_commit)
                     except Exception as e:
                         LOG.debug(e)
                 else:
-                    self._boot_server(image, flavor, **kwargs)
-
+                    self._live_migrate(server, block_migration, disk_over_commit)
         except Exception as e:
             LOG.error(e)
             raise
