@@ -33,6 +33,10 @@ class BasicNovaHa(utils.NovaScenario):
                 LOG.info('stop on host %s' % host)
                 index = index + 1
                 pe.execute([host + "*", 'cmd.run', cmd])
+
+                import time
+                LOG.info('sleep 10s')
+                time.sleep(10)
                 try:
                     self._exec(**kwargs)
                 except Exception as e:
