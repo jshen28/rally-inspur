@@ -223,7 +223,7 @@ class NeutronServerHa(NeutronHaTest, nova_utils.NovaScenario):
         index = 0
         hosts = [i.host for i in self.admin_clients("nova").services.list(binary='nova-conductor')]
         try:
-            for host, _ in hosts:
+            for host in hosts:
                 index = index + 1
                 LOG.info('stop neutron-server on host %s' % host)
                 pe.execute([host + '*', 'cmd.run', 'systemctl stop neutron-server'])
@@ -234,7 +234,7 @@ class NeutronServerHa(NeutronHaTest, nova_utils.NovaScenario):
                 raise e
         finally:
             try:
-                for host, state in hosts:
+                for host in hosts:
                     LOG.info('start neutron-server on host %s' % host)
                     pe.execute([host + "*", 'cmd.run', 'systemctl start neutron-server'])
             except Exception as e:
