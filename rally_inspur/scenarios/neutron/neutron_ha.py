@@ -221,20 +221,22 @@ class NeutronServerHa(NeutronHaTest):
 
         pe = PepperExecutor(uri=salt_api_uri, passwd=salt_user_passwd)
         binary = 'neutron-dhcp-agent'
+        index = 0
+        hosts = self._get_agent_hosts(binary=binary)
         try:
-            for host, _ in self._get_agent_hosts(binary=binary):
+            for host, _ in hosts:
+                index = index + 1
                 LOG.info('stop neutron-server on host %s' % host)
                 pe.execute([host + '*', 'cmd.run', 'systemctl stop neutron-server'])
                 _ = self._create_network(network_create_args or {})
         except Exception as e:
             LOG.error(e)
-            raise e
+            if index < len(hosts):
+                raise e
         finally:
             try:
-                for host, state in self._get_agent_hosts(binary=binary):
+                for host, state in hosts:
                     LOG.info('start neutron-server on host %s' % host)
-                    if state:
-                        pass
                     pe.execute([host + "*", 'cmd.run', 'systemctl start neutron-server'])
             except Exception as e:
                 LOG.error(e)
