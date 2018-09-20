@@ -304,7 +304,7 @@ class NeutronDhcpAgentHa(NeutronHaTest):
 
                 # server could have multiple NICs over multiple networks
                 # for simplicity assumes single interface is attached
-                ok = self._ping_server(host, pe, network_id, server.networks.values()[0])
+                ok = self._ping_server(host, pe, network_id, server.networks[0].values()[0])
                 if not ok and index < len(hosts):
                     raise Exception('server could not get its ip')
         except Exception as e:
