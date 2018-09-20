@@ -64,3 +64,7 @@ class NovaConductorHa(utils.NovaScenario):
                 except Exception:
                     pass
 
+            import time
+            LOG.info('wait for 20s before resuming')
+            time.sleep(20)
+
