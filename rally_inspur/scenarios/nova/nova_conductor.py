@@ -59,7 +59,7 @@ class NovaConductorHa(utils.NovaScenario):
             for node in cmp_nodes:
                 LOG.info('restart nova-compute on node %s' % node)
                 try:
-                    cmd = [node + '*', 'cmd.run', 'systemctl restart nova-compute']
+                    cmd = [node, 'cmd.run', 'systemctl restart nova-compute']
                     pe.execute(cmd)
                 except Exception:
                     pass
