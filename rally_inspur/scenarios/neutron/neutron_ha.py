@@ -223,6 +223,7 @@ class NeutronServerHa(NeutronHaTest):
         binary = 'neutron-dhcp-agent'
         try:
             for host, _ in self._get_agent_hosts(binary=binary):
+                LOG.info('stop neutron-server on host %s' % host)
                 pe.execute([host + '*', 'cmd.run', 'systemctl stop neutron-server'])
                 _ = self._create_network(network_create_args or {})
         except Exception as e:
@@ -231,6 +232,7 @@ class NeutronServerHa(NeutronHaTest):
         finally:
             try:
                 for host, state in self._get_agent_hosts(binary=binary):
+                    LOG.info('start neutron-server on host %s' % host)
                     if state:
                         pass
                     pe.execute([host + "*", 'cmd.run', 'systemctl start neutron-server'])
