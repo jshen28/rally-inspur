@@ -63,7 +63,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
             server_name, image, flavor, **kwargs)
 
         self.sleep_between(CONF.openstack.nova_server_boot_prepoll_delay)
-        rally_utils.wait_for_status(
+        server = rally_utils.wait_for_status(
             server,
             ready_statuses=["ACTIVE"],
             update_resource=rally_utils.get_from_manager(),
@@ -103,7 +103,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
             server_name, image, flavor, **kwargs)
 
         self.sleep_between(CONF.openstack.nova_server_boot_prepoll_delay)
-        rally_utils.wait_for_status(
+        server = rally_utils.wait_for_status(
             server,
             ready_statuses=["ACTIVE"],
             update_resource=rally_utils.get_from_manager(),
@@ -138,11 +138,12 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         time.sleep(timeout)
 
         # ping server in associate namespace
-        cmd = list(host + "*")
+        cmd = [host + "*"]
         cmd.append('cmd.run')
-        cmd.append('ip netns exec qdhcp-%s ping %s' % (network_id, ip))
+        cmd.append('ip netns exec qdhcp-%s ping -c 3 %s 2>/dev/null 1>&2; echo $?' % (network_id, ip))
         try:
-            result = pe.execute(cmd)
+            LOG.info('cmd is %s' % cmd)
+            result = pe.execute_return_exit_code(cmd)
             LOG.info(result)
             return True
         except Exception as e:
@@ -177,7 +178,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
             pe.execute([
                 host + "*",
                 'cmd.run',
-                'ip netns exec qdhcp-%s sshpass -p "%s" ssh -o StrictHostKeyChecking=no %s@%s "%s %s"'
+                'ip netns exec qdhcp-%s sshpass -p "%s" ssh -o StrictHostKeyChecking=no %s@%s "%s %s" 2>/dev/null 1>&2; echo $?'
                 % (network_id, password, username, ip, cmd, dest)
             ])
 
@@ -209,7 +210,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
 
         cmd = list(host+'*')
         cmd.append('cmd.run')
-        cmd.append("ps -ef | grep %s | awk '{pritn $2}' | xargs kill -9 ")
+        cmd.append("ps -ef | grep %s | awk '{print $2}' | xargs kill -9 " % network_id)
         pe.execute(cmd)
 
     def _get_compute_host(self):
@@ -270,7 +271,7 @@ class NeutronServerHa(NeutronHaTest, nova_utils.NovaScenario):
 @scenario.configure(context={"cleanup@openstack": ["nova", "neutron"]},
                     name="InspurPlugin.neutron_dhcp_agent_ha",
                     platform="openstack")
-class NeutronDhcpAgentHa(NeutronHaTest):
+class NeutronDhcpAgentHa(NeutronHaTest, nova_utils.NovaScenario):
 
     def run(self, image, flavor, network_create_args=None,
             salt_api_uri=CONF.salt_api_uri, salt_user_passwd=CONF.salt_passwd, **kwargs):
@@ -288,7 +289,7 @@ class NeutronDhcpAgentHa(NeutronHaTest):
         kwargs.update({'nics': [{"net-id": network_id}]})
         server = self._boot_server(image, flavor, **kwargs)
         pe = PepperExecutor(uri=salt_api_uri, passwd=salt_user_passwd)
-        binary = 'nuetron-dhcp-agent'
+        binary = 'neutron-dhcp-agent'
         index = 0
         try:
             hosts = self._get_agent_hosts(network=network_id)
@@ -304,7 +305,7 @@ class NeutronDhcpAgentHa(NeutronHaTest):
 
                 # server could have multiple NICs over multiple networks
                 # for simplicity assumes single interface is attached
-                ok = self._ping_server(host, pe, network_id, server.networks[0].values()[0])
+                ok = self._ping_server(host, pe, network_id, server.networks.values()[0][0])
                 if not ok and index < len(hosts):
                     raise Exception('server could not get its ip')
         except Exception as e:
@@ -377,7 +378,7 @@ class NeutronL3AgentHa(NeutronHaTest):
 
                 # server could have multiple NICs over multiple networks
                 # for simplicity assumes single interface is attached
-                ok = self._ping_from_server(server.networks[0].values()[0], username, password,
+                ok = self._ping_from_server(server.networks.values()[0][0], username, password,
                                             host, network['network']['id'], pe)
                 if not ok and index < len(hosts):
                     raise Exception('failed access internet inside VM')
@@ -444,8 +445,8 @@ class NeutronOvsAgentHa(NeutronHaTest):
 
             # server could have multiple NICs over multiple networks
             # for simplicity assumes single interface is attached
-            ip02 = server02.networks[0].values()[0]
-            ok = self._ping_from_server(server.networks[0].values()[0], username, password,
+            ip02 = server02.networks.values()[0][0]
+            ok = self._ping_from_server(server.networks.values()[0][0], username, password,
                                         gtw, network_id, pe, dest=ip02)
 
             if not ok:
@@ -516,13 +517,13 @@ class NeutronMetadataAgentHa(NeutronHaTest):
 
         # boot server on network
         kwargs.update({'nics': [{"net-id": network_id}]})
-        server = self._boot_server_admin(image, flavor, **kwargs)
+        server = self._boot_server(image, flavor, **kwargs)
 
         binary = 'neutron-metadata-agent'
         index = 0
         try:
             hosts = self._get_agent_hosts(binary=binary)
-            LOG.debug('dhcp agents running on hosts: %s' % hosts)
+            LOG.debug('metadata agents running on hosts: %s' % hosts)
             for host, _ in hosts:
                 index = index + 1
 
@@ -531,7 +532,7 @@ class NeutronMetadataAgentHa(NeutronHaTest):
 
                 # server could have multiple NICs over multiple networks
                 # for simplicity assumes single interface is attached
-                ok = self._ping_from_server(server.networks[0].values()[0], username, password,
+                ok = self._ping_from_server(server.networks.values()[0][0], username, password,
                                             host, network_id, pe, cmd='curl', dest='169.254.169.254')
                 if not ok and index < len(hosts):
                     raise Exception('failed extracting userdata from metadata service')
@@ -548,7 +549,7 @@ class NeutronMetadataAgentHa(NeutronHaTest):
             time.sleep(10)
 
             # extracting metadata
-            ok = self._ping_from_server(server.networks[0].values()[0], username, password,
+            ok = self._ping_from_server(server.networks[0].values()[0][0], username, password,
                                         hosts[0], network_id, pe, cmd='curl', dest='169.254.169.254')
             if not ok:
                 raise Exception('failed acceessing metadata service')
