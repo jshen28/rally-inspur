@@ -559,8 +559,8 @@ class NeutronMetadataAgentHa(NeutronHaTest):
         binary = 'neutron-metadata-agent'
         index = 0
         hosts = [i for i, _ in self._get_agent_hosts(binary='neutron-dhcp-agent')]
+        hosts.append(cmp_host)
         try:
-            hosts.append(cmp_host)
             LOG.debug('metadata agents running on hosts: %s' % hosts)
             for host in hosts:
                 LOG.info('stop metadata-agent on host %s' % host)
