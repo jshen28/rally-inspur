@@ -18,6 +18,7 @@ from rally.task import validation, types
 from rally_openstack import consts
 from rally_openstack import scenario
 from rally_openstack.scenarios.neutron import utils
+from rally_openstack.scenarios.nova import utils as nova_utils
 from rally.common import cfg, logging
 
 CONF = cfg.CONF
@@ -25,7 +26,7 @@ CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
-class NeutronHaTest(utils.NeutronScenario, utils.NovaScenario):
+class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
 
     def _get_agent_hosts(self, binary=None, **kwargs):
 
