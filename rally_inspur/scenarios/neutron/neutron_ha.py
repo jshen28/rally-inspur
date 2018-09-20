@@ -92,7 +92,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         rally_utils.wait_for_status(
             server,
             ready_statuses=["ACTIVE"],
-            update_resource=utils.get_from_manager(),
+            update_resource=rally_utils.get_from_manager(),
             timeout=CONF.openstack.nova_server_boot_timeout,
             check_interval=CONF.openstack.nova_server_boot_poll_interval
         )
