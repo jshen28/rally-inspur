@@ -38,8 +38,6 @@ class GlanceHa(GlanceBasic):
                     LOG.error(e)
                     if index < len(hosts):
                         raise Exception('glance-api failed')
-        except Exception as e:
-            LOG.error(e)
         finally:
             # restore glance-api services
             for host in hosts:
