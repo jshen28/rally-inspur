@@ -9,8 +9,8 @@ LOG = logging.getLogger(__name__)
 class BasicNovaHa(utils.NovaScenario):
 
     def _exec(self, **kwargs):
-        image = kwargs.get('image')
-        flavor = kwargs.get('flavor')
+        image = kwargs.pop('image')
+        flavor = kwargs.pop('flavor')
         self._boot_server(image, flavor, **kwargs)
 
     def _run(self, salt_api_uri=None, salt_user_passwd=None, hosts=None, **kwargs):
