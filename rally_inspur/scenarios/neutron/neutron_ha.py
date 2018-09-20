@@ -175,12 +175,14 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
             ])
 
             # execute ping using ssh
-            pe.execute([
+            cmd = [
                 host + "*",
                 'cmd.run',
                 'ip netns exec qdhcp-%s sshpass -p "%s" ssh -o StrictHostKeyChecking=no %s@%s "%s %s" 2>/dev/null 1>&2; echo $?'
                 % (network_id, password, username, ip, cmd, dest)
-            ])
+            ]
+            LOG.info('cmd is %s' % cmd)
+            pe.execute_return_exit_code(cmd)
 
             return True
         except Exception as e:
