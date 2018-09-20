@@ -133,6 +133,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         interface_list = []
         for attachment in attachments:
             interface_list.append(attachment.port_id)
+        return interface_list
 
 
     def _ping_server(self, host, pe, network_id, ip, timeout=60):
