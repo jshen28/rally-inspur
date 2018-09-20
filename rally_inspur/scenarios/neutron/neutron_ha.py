@@ -271,7 +271,7 @@ class NeutronDhcpAgentHa(NeutronHaTest):
         network, subnets = self._create_network_and_subnets(network_create_args or {})
         network_id = network.get('network', {}).get('id')
         kwargs.update({'nics': [{"net-id": network_id}]})
-        server = self._boot_server(image, flavor, **kwargs)
+        server = self._boot_server_admin(image, flavor, **kwargs)
         pe = PepperExecutor(uri=salt_api_uri, passwd=salt_user_passwd)
         binary = 'nuetron-dhcp-agent'
         index = 0
@@ -346,7 +346,7 @@ class NeutronL3AgentHa(NeutronHaTest):
 
         # boot server on network
         kwargs.update({'nics': [{"net-id": network_id}]})
-        server = self._boot_server(image, flavor, **kwargs)
+        server = self._boot_server_admin(image, flavor, **kwargs)
 
         binary = 'neutron-l3-agent'
         index = 0
@@ -501,7 +501,7 @@ class NeutronMetadataAgentHa(NeutronHaTest):
 
         # boot server on network
         kwargs.update({'nics': [{"net-id": network_id}]})
-        server = self._boot_server(image, flavor, **kwargs)
+        server = self._boot_server_admin(image, flavor, **kwargs)
 
         binary = 'neutron-metadata-agent'
         index = 0
