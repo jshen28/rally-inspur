@@ -31,8 +31,9 @@ class NovaConductorHa(utils.NovaScenario):
         index = 0
         try:
             for node in ctl_nodes:
+                LOG.info('stop nova-conductor on node %s' % node)
                 index = index + 1
-                cmd = [node, 'cmd.run', 'systemctl stop nova-conductor']
+                cmd = [node + '*', 'cmd.run', 'systemctl stop nova-conductor']
                 pe.execute(cmd)
                 if index == len(ctl_nodes):
                     try:
@@ -47,8 +48,9 @@ class NovaConductorHa(utils.NovaScenario):
             raise
         finally:
             for node in ctl_nodes:
+                LOG.info('restart nova-conductor on node %s' % node)
                 try:
-                    cmd = [node, 'cmd.run', 'systemctl start nova-conductor']
+                    cmd = [node + '*', 'cmd.run', 'systemctl start nova-conductor']
                     pe.execute(cmd)
                 except Exception:
                     pass
