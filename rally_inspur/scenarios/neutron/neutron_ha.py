@@ -338,7 +338,7 @@ class NeutronDhcpAgentHa(NeutronHaTest, nova_utils.NovaScenario):
 class NeutronL3AgentHa(NeutronHaTest):
 
     def run(self, image, flavor, username='cirros', password='cubswin:)', network_create_args=None, router_create_args=None,
-            ext_net=None, salt_api_uri=CONF.salt_api_uri, salt_user_passwd=CONF.salt_passwd, **kwargs):
+            salt_api_uri=CONF.salt_api_uri, salt_user_passwd=CONF.salt_passwd, **kwargs):
         """verify neutron l3 agent availability
 
         :param image: image name (will be auto converted to id)
@@ -359,8 +359,6 @@ class NeutronL3AgentHa(NeutronHaTest):
         # create router and add interface
         router = self._create_router(router_create_args or {}, )
         self._add_interface_router(subnets[0]['subnet'], router['router'])
-        ext_subnets = self.clients('neutron').list_subnets(network_id=ext_net)
-        self._add_interface_router(ext_subnets['subnets'][0], router['router'])
 
         # save router id & network id
         router_id = router['router']['id']
