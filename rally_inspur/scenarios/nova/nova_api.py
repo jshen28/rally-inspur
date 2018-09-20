@@ -32,11 +32,12 @@ class NovaApiHa(utils.NovaScenario):
         if len(ctl_nodes) < len(conductor_services):
             print('This test case needs all ctl nodes')
             return
-
+        LOG.info('salt api uri: %s, salt passwd: %s' % (salt_api_url, salt_passwd))
         pe = PepperExecutor(uri=salt_api_url, passwd=salt_passwd)
         index = 0
         try:
             for node in ctl_nodes:
+                LOG.info('stop nova-api on %s' % node)
                 cmd = [node, 'cmd.run', 'systemctl stop nova-api']
                 pe.execute(cmd)
                 if index == (len(ctl_nodes) - 1):
