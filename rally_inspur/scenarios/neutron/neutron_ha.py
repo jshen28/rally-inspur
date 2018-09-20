@@ -273,7 +273,7 @@ class NeutronDhcpAgentHa(NeutronHaTest):
         index = 0
         try:
             hosts = self._get_agent_hosts(network=network_id)
-            LOG.debug('dhcp agents %s host network %s' % (hosts, network_id))
+            LOG.info('dhcp agents %s host network %s' % (hosts, network_id))
             for host, _ in hosts:
                 index = index + 1
 
@@ -294,6 +294,7 @@ class NeutronDhcpAgentHa(NeutronHaTest):
         finally:
             try:
                 for host, state in self._get_agent_hosts(network=network_id):
+                    LOG.info('start dhcp-agent on host %s' % host)
                     if state:
                         pass
                     pe.execute([host + "*", 'cmd.run', 'systemctl start %s' % binary])
