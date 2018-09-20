@@ -130,21 +130,17 @@ class CreateAndAttachVolume(cinder_utils.CinderBasic,
         server = self._boot_server(image, flavor, **create_vm_params)
         volume = self.cinder.create_volume(size, **create_volume_params)
 
+        index = 0
         try:
-            index = 0
             for host in hosts:
                 index = index + 1
                 pe.execute([host + "*", 'cmd.run', 'systemctl stop cinder-volume'])
-                try:
-                    self._attach_volume(server, volume)
-                    self._detach_volume(server, volume)
-                except Exception as e:
-                    LOG.error(e)
-                    if index != len(hosts):
-                        raise e
-
+                self._attach_volume(server, volume)
+                self._detach_volume(server, volume)
         except Exception as e:
             LOG.error(e)
+            if index != len(hosts):
+                raise e
         finally:
             for host in hosts:
                 if host.state != 'up':
@@ -191,24 +187,24 @@ class CinderSchedulerHa(cinder_utils.CinderBasic):
 
         hosts = [i.host for i in self.admin_cinder.services.list(binary='cinder-scheduler')]
 
+        index = 0
         try:
-            index = 0
             for host in hosts:
+                LOG.info('stop cinder-scheduler on node %s' % host)
                 index = index + 1
                 pe.execute([host + "*", 'cmd.run', 'systemctl stop cinder-scheduler'])
-                try:
-                    self.cinder.create_volume(size, **kwargs)
-                except Exception as e:
-                    LOG.error(e)
-                    if index != len(hosts):
-                        raise e
-
+                self.cinder.create_volume(size, **kwargs)
         except Exception as e:
             LOG.error(e)
+            if index != len(hosts):
+                raise e
         finally:
             for host in hosts:
-                if host.state != 'up':
+                LOG.info('start cinder-scheduler on %s' % host)
+                try:
                     pe.execute([host + '*', 'cmd.run', 'systemctl start cinder-scheduler'])
+                except Exception as e:
+                    LOG.error(e)
 
 
 @types.convert(image={"type": "glance_image"})
@@ -258,11 +254,11 @@ class CinderApiHa(cinder_utils.CinderBasic):
                     LOG.error(e)
                     if index != len(hosts):
                         raise e
-
-        except Exception as e:
-            LOG.error(e)
         finally:
             for host in hosts:
-                if host.state != 'up':
+                LOG.info('start cinder-api on %s' % host)
+                try:
                     pe.execute([host + '*', 'cmd.run', 'systemctl start cinder-api'])
+                except Exception as e:
+                    LOG.error(e)
 
