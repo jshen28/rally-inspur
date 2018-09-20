@@ -113,7 +113,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         return server
 
     def _detach_nic(self, server, only_one=True):
-        nova = self.clients('nova')
+        nova = self.admin_clients('nova')
         attachments = nova.servers.interface_list(server)['interfaceAttachments']
 
         for attachment in attachments:
