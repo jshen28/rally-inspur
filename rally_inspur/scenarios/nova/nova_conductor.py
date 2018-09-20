@@ -31,6 +31,7 @@ class NovaConductorHa(utils.NovaScenario):
         index = 0
         try:
             for node in ctl_nodes:
+                index = index + 1
                 cmd = [node, 'cmd.run', 'systemctl stop nova-conductor']
                 pe.execute(cmd)
                 if index == (len(ctl_nodes) - 1):
