@@ -117,7 +117,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         attachments = nova.servers.interface_list(server)
 
         for attachment in attachments:
-            nova.servers.interface_detach(server, attachment['port_id'])
+            nova.servers.interface_detach(server, attachment.port_id)
             if only_one:
                 break
 
