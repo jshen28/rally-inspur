@@ -118,7 +118,7 @@ class CreateAndAttachVolume(cinder_utils.CinderBasic,
         pe = PepperExecutor(uri=salt_api_url, passwd=salt_user_passwd)
 
         hosts = [i.host.split('@')[0] for i in self._admin_clients.cinder.create_client()
-            .services.list(binary='cinder-volume')]
+                 .services.list(binary='cinder-volume')]
 
         create_volume_params = create_volume_params or {}
 
@@ -147,8 +147,7 @@ class CreateAndAttachVolume(cinder_utils.CinderBasic,
         finally:
             for host in hosts:
                 LOG.info('start cinder-volume on %s ' % host)
-                if host.state != 'up':
-                    pe.execute([host + '*', 'cmd.run', 'systemctl start cinder-volume'])
+                pe.execute([host + '*', 'cmd.run', 'systemctl start cinder-volume'])
 
             import time
             LOG.info('waiting for 15s before resuming')
