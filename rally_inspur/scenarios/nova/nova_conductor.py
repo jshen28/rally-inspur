@@ -52,7 +52,8 @@ class NovaConductorHa(utils.NovaScenario):
                 try:
                     cmd = [node + '*', 'cmd.run', 'systemctl start nova-conductor']
                     pe.execute(cmd)
-                except Exception:
+                except Exception as e:
+                    LOG.error(e)
                     pass
 
             cmp_nodes = [i.host + "*" for i in self.admin_clients("nova").services.list(binary='nova-compute')]

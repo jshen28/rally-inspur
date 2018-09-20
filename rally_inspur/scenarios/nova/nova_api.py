@@ -49,7 +49,7 @@ class NovaApiHa(utils.NovaScenario):
                                       auto_assign_nic=auto_assign_nic, **kwargs)
 
         except Exception as e:
-            print(e)
+            LOG.error(e)
             raise
         finally:
             for node in ctl_nodes:
