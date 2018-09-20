@@ -30,6 +30,7 @@ class BasicNovaHa(utils.NovaScenario):
         index = 0
         try:
             for host in sorted(hosts):
+                LOG.info('stop on host %s' % host)
                 index = index + 1
                 pe.execute([host + "*", 'cmd.run', cmd])
                 try:
@@ -41,6 +42,7 @@ class BasicNovaHa(utils.NovaScenario):
         finally:
 
             for host in sorted(hosts, reverse=True):
+                LOG.info('start on host %s' % host)
                 try:
                     pe.execute([host + "*", 'cmd.run', restore_cmd])
                 except Exception as e:
