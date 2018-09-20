@@ -355,8 +355,8 @@ class NeutronL3AgentHa(NeutronHaTest):
         network, subnets = self._create_network_and_subnets(network_create_args or {})
 
         # create router and add interface
-        router = self._create_router(router_create_args)
-        self._add_interface_router(subnets['subnets'][0], router['router'])
+        router = self._create_router(router_create_args or {})
+        self._add_interface_router(subnets[0]['subnet'], router['router'])
 
         # save router id & network id
         router_id = router['router']['id']
