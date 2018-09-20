@@ -450,6 +450,9 @@ class NeutronOvsAgentHa(NeutronHaTest):
 
             # server could have multiple NICs over multiple networks
             # for simplicity assumes single interface is attached
+            LOG.info('wait 60s for bootup')
+            import time
+            time.sleep(60)
             ip02 = server02.networks.values()[0][0]
             ok = self._ping_from_server(server.networks.values()[0][0], username, password,
                                         gtw, network_id, pe, dest=ip02)
