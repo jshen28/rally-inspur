@@ -119,4 +119,7 @@ class GlanceRegistryHa(GlanceHa):
             min_ram=kwargs.get('min_ram'),
             properties=kwargs.get('properties'))
 
+        if not image:
+            raise Exception('create image failed')
+
 
