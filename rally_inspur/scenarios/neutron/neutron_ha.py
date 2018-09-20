@@ -114,7 +114,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
 
     def _detach_nic(self, server, only_one=True):
         nova = self.admin_clients('nova')
-        attachments = nova.servers.interface_list(server)['interfaceAttachments']
+        attachments = nova.servers.interface_list(server)
 
         for attachment in attachments:
             nova.servers.interface_detach(server, attachment['port_id'])
@@ -442,7 +442,7 @@ class NeutronOvsAgentHa(NeutronHaTest):
         server02 = self._boot_server_admin(image, flavor, **kwargs)
 
         # get gateway host
-        gtw = self._get_agent_hosts(network=network_id)[0]
+        gtw, _ = self._get_agent_hosts(network=network_id)[0]
 
         binary = 'neutron-openvswitch-agent'
         try:
