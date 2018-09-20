@@ -117,7 +117,8 @@ class CreateAndAttachVolume(cinder_utils.CinderBasic,
 
         pe = PepperExecutor(uri=salt_api_url, passwd=salt_user_passwd)
 
-        hosts = [i.host.split('@')[0] for i in self.admin_cinder.services.list(binary='cinder-volume')]
+        hosts = [i.host.split('@')[0] for i in self._admin_clients.cinder.create_client()
+            .services.list(binary='cinder-volume')]
 
         create_volume_params = create_volume_params or {}
 
@@ -186,7 +187,8 @@ class CinderSchedulerHa(cinder_utils.CinderBasic):
 
         pe = PepperExecutor(uri=salt_api_url, passwd=salt_user_passwd)
 
-        hosts = [i.host for i in self._admin_clients('cinder').services.list(binary='cinder-scheduler')]
+        hosts = [i.host for i in self._admin_clients.cinder.create_client()
+            .services.list(binary='cinder-scheduler')]
 
         index = 0
         try:
