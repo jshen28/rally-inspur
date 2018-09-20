@@ -14,7 +14,7 @@ from rally_openstack.wrappers import network as network_wrapper
 
 @validation.add("required_services", services=[consts.Service.NOVA])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(name="SjtPlugin.list_servers", platform="openstack")
+@scenario.configure(name="NSPNETWORKS.list_servers", platform="openstack")
 class ListServers(utils.NovaScenario):
 
     def run(self, detailed=True):

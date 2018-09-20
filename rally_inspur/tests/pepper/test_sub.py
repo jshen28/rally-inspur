@@ -2,13 +2,15 @@ from rally_inspur.tests.pepper.test_sup import TestSup
 import socket
 
 
-socket.getaddrinfo()
+if __name__ == '__main__':
+
+    socket.getaddrinfo()
 
 
-class TestSub(TestSup):
+    class TestSub(TestSup):
 
-    def __init__(self):
-        print('hello sub')
+        def __init__(self):
+            print('hello sub')
 
 
 
