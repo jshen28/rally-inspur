@@ -240,6 +240,10 @@ class NeutronServerHa(NeutronHaTest, nova_utils.NovaScenario):
             except Exception as e:
                 LOG.error(e)
 
+            import time
+            LOG.info('wait for 15s before continuing')
+            time.sleep(15)
+
 
 @types.convert(image={"type": "glance_image"},
                flavor={"type": "nova_flavor"})
