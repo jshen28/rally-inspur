@@ -118,6 +118,10 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
 
         for attachment in attachments:
             nova.servers.interface_detach(server, attachment.port_id)
+            LOG.info('server %s status %s' % (server.id, getattr(nova.servers, 'get')(server).status))
+
+            import time
+            time.sleep(10)
 
             # it looks to me that interface detaching is synchronous rightnow
             if attachment.port_id in self._list_interfaces(server):
