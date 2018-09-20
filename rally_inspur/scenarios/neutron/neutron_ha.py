@@ -178,7 +178,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
             cmd = [
                 host + "*",
                 'cmd.run',
-                'ip netns exec qdhcp-%s sshpass -p "%s" ssh -o StrictHostKeyChecking=no %s@%s "%s %s" 2>/dev/null 1>&2; echo $?'
+                'ip netns exec qdhcp-%s sshpass -p "%s" ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no %s@%s "%s %s" 2>/dev/null 1>&2; echo $?'
                 % (network_id, password, username, ip, cmd, dest)
             ]
             LOG.info('cmd is %s' % cmd)
