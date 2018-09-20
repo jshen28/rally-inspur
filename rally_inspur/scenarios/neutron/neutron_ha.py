@@ -572,7 +572,7 @@ class NeutronMetadataAgentHa(NeutronHaTest):
                 # server could have multiple NICs over multiple networks
                 # for simplicity assumes single interface is attached
                 ok = self._ping_from_server(server.networks.values()[0][0], username, password,
-                                            host, network_id, pe, cmd='curl', dest='169.254.169.254')
+                                            hosts[0], network_id, pe, cmd='curl', dest='169.254.169.254')
                 if not ok and index < len(hosts):
                     raise Exception('failed extracting userdata from metadata service')
 
@@ -588,7 +588,7 @@ class NeutronMetadataAgentHa(NeutronHaTest):
             time.sleep(10)
 
             # extracting metadata
-            ok = self._ping_from_server(server.networks[0].values()[0][0], username, password,
+            ok = self._ping_from_server(server.networks.values()[0][0], username, password,
                                         hosts[0], network_id, pe, cmd='curl', dest='169.254.169.254')
             if not ok:
                 raise Exception('failed acceessing metadata service')
