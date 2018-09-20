@@ -86,9 +86,9 @@ class PepperExecutor(object):
         for exit_code, result in cli.run():
             if exit_code == 0:
                 # print(result)
-                for i in result.values():
+                for i in json.loads(result).values():
                     if int(i) == 0:
-                        result_list.append(json.loads(result))
+                        result_list.append(i)
             else:
                 raise Exception('error executing command')
         return result_list
