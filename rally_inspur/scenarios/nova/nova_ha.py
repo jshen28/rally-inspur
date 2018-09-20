@@ -80,6 +80,7 @@ class NovaConsoleauthHa(utils.NovaScenario):
         index = 0
         try:
             for node in ctl_nodes:
+                LOG.info('stop nova-consoleauth on node %s' % node)
                 index = index + 1
                 cmd = [node, 'cmd.run', 'systemctl stop nova-consoleauth']
                 pe.execute(cmd)
@@ -97,9 +98,11 @@ class NovaConsoleauthHa(utils.NovaScenario):
 
         except Exception as e:
             LOG.error(e)
-            raise
+            if index < len(ctl_nodes):
+                raise
         finally:
             for node in ctl_nodes:
+                LOG.info('start nova-consoleauth on node %s' % node)
                 try:
                     cmd = [node, 'cmd.run', 'systemctl start nova-consoleauth']
                     pe.execute(cmd)
