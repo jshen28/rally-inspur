@@ -553,12 +553,16 @@ class NeutronMetadataAgentHa(NeutronHaTest):
         kwargs.update({'nics': [{"net-id": network_id}]})
         server = self._boot_server(image, flavor, **kwargs)
 
+        server_detail = getattr(self.admin_clients('nova').servers, "get")(server)
+        cmp_host = getattr(server_detail, 'OS-EXT-SRV-ATTR:host')
+
         binary = 'neutron-metadata-agent'
         index = 0
+        hosts = [i for i, _ in self._get_agent_hosts(binary='neutron-dhcp-agent')]
         try:
-            hosts = self._get_agent_hosts(binary=binary)
+            hosts.append(cmp_host)
             LOG.debug('metadata agents running on hosts: %s' % hosts)
-            for host, _ in hosts:
+            for host in hosts:
                 LOG.info('stop metadata-agent on host %s' % host)
                 index = index + 1
 
@@ -592,4 +596,8 @@ class NeutronMetadataAgentHa(NeutronHaTest):
         except Exception as e:
             LOG.error(e)
             raise e
+        finally:
+            for host in hosts:
+                pe.execute([host+"*", 'cmd.run', 'systemctl restart %s' % binary])
+
 
