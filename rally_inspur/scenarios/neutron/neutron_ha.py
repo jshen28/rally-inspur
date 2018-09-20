@@ -44,7 +44,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
                      for i in self.admin_clients('neutron').list_agents(binary=binary, **kwargs).get('agents', [])]
         return hosts
 
-    def _boot_server(self, image, flavor, **kwargs):
+    def _boot_server(self, image, flavor, auto_assign_nic=False, **kwargs):
 
         server_name = self.generate_random_name()
         secgroup = self.context.get("user", {}).get("secgroup")
@@ -54,8 +54,22 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
             elif secgroup["name"] not in kwargs["security_groups"]:
                 kwargs["security_groups"].append(secgroup["name"])
 
+        if auto_assign_nic and not kwargs.get("nics", False):
+            nic = self._pick_random_nic()
+            if nic:
+                kwargs["nics"] = nic
+
         server = self.clients("nova").servers.create(
             server_name, image, flavor, **kwargs)
+
+        self.sleep_between(CONF.openstack.nova_server_boot_prepoll_delay)
+        rally_utils.wait_for_status(
+            server,
+            ready_statuses=["ACTIVE"],
+            update_resource=rally_utils.get_from_manager(),
+            timeout=CONF.openstack.nova_server_boot_timeout,
+            check_interval=CONF.openstack.nova_server_boot_poll_interval
+        )
         return server
 
     def _boot_server_admin(self, image, flavor, auto_assign_nic=False, **kwargs):
@@ -272,7 +286,7 @@ class NeutronDhcpAgentHa(NeutronHaTest):
         network, subnets = self._create_network_and_subnets(network_create_args or {})
         network_id = network.get('network', {}).get('id')
         kwargs.update({'nics': [{"net-id": network_id}]})
-        server = self._boot_server_admin(image, flavor, **kwargs)
+        server = self._boot_server(image, flavor, **kwargs)
         pe = PepperExecutor(uri=salt_api_uri, passwd=salt_user_passwd)
         binary = 'nuetron-dhcp-agent'
         index = 0
@@ -290,7 +304,7 @@ class NeutronDhcpAgentHa(NeutronHaTest):
 
                 # server could have multiple NICs over multiple networks
                 # for simplicity assumes single interface is attached
-                ok = self._ping_server(host, pe, network_id, server.networks.values()[0][0])
+                ok = self._ping_server(host, pe, network_id, server.networks.values()[0])
                 if not ok and index < len(hosts):
                     raise Exception('server could not get its ip')
         except Exception as e:
