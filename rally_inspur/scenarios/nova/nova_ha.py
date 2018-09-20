@@ -85,7 +85,7 @@ class NovaConsoleauthHa(utils.NovaScenario):
                 cmd = [node, 'cmd.run', 'systemctl stop nova-consoleauth']
                 pe.execute(cmd)
 
-                url = self.client('nova').servers\
+                url = self.clients('nova').servers\
                           .get_vnc_console(server, console_type)\
                           .get('console', {}).get('url')
                 if not url:
