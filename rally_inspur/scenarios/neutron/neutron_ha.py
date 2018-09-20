@@ -14,6 +14,7 @@
 #    under the License.
 from rally_inspur.pepper.cli import PepperExecutor
 from rally.task import validation, types
+from rally.task import utils as rally_utils
 
 from rally_openstack import consts
 from rally_openstack import scenario
@@ -88,7 +89,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
             server_name, image, flavor, **kwargs)
 
         self.sleep_between(CONF.openstack.nova_server_boot_prepoll_delay)
-        server = utils.wait_for_status(
+        rally_utils.wait_for_status(
             server,
             ready_statuses=["ACTIVE"],
             update_resource=utils.get_from_manager(),
