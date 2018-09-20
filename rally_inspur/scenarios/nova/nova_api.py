@@ -37,6 +37,7 @@ class NovaApiHa(utils.NovaScenario):
         index = 0
         try:
             for node in ctl_nodes:
+                index = index + 1
                 LOG.info('stop nova-api on %s' % node)
                 cmd = [node, 'cmd.run', 'systemctl stop nova-api']
                 pe.execute(cmd)
