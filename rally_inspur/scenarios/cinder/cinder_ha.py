@@ -54,7 +54,8 @@ class CinderVolumeHaDeprecated(cinder_utils.CinderBasic):
 
         pe = PepperExecutor(uri=salt_api_url, passwd=salt_user_passwd)
 
-        hosts = [i.host.split('@')[0] for i in self.admin_cinder.services.list(binary='cinder-volume')]
+        hosts = [i.host.split('@')[0] for i in self._admin_clients.cinder.create_client()
+            .services.list(binary='cinder-volume')]
 
         try:
             index = 0
