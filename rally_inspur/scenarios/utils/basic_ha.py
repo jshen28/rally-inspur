@@ -9,8 +9,8 @@ LOG = logging.getLogger(__name__)
 class BasicNovaHa(utils.NovaScenario):
 
     def _exec(self, **kwargs):
-        image = kwargs.get('image')
-        flavor = kwargs.get('flavor')
+        image = kwargs.pop('image')
+        flavor = kwargs.pop('flavor')
         self._boot_server(image, flavor, **kwargs)
 
     def _run(self, salt_api_uri=None, salt_user_passwd=None, hosts=None, **kwargs):
@@ -30,8 +30,13 @@ class BasicNovaHa(utils.NovaScenario):
         index = 0
         try:
             for host in sorted(hosts):
+                LOG.info('stop on host %s' % host)
                 index = index + 1
                 pe.execute([host + "*", 'cmd.run', cmd])
+
+                import time
+                LOG.info('sleep 10s')
+                time.sleep(10)
                 try:
                     self._exec(**kwargs)
                 except Exception as e:
@@ -41,6 +46,7 @@ class BasicNovaHa(utils.NovaScenario):
         finally:
 
             for host in sorted(hosts, reverse=True):
+                LOG.info('start on host %s' % host)
                 try:
                     pe.execute([host + "*", 'cmd.run', restore_cmd])
                 except Exception as e:

@@ -118,8 +118,28 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
 
         for attachment in attachments:
             nova.servers.interface_detach(server, attachment.port_id)
+            serverng = getattr(nova.servers, 'get')(server)
+            LOG.info('server %s status %s' % (server.id, serverng.status))
+
+            import time
+            time.sleep(10)
+
+            # it looks to me that interface detaching is synchronous rightnow
+            if attachment.port_id in self._list_interfaces(server):
+                raise Exception('detaching interface failed')
+
             if only_one:
                 break
+
+    def _list_interfaces(self, server):
+        nova = self.admin_clients('nova')
+        attachments = nova.servers.interface_list(server)
+
+        interface_list = []
+        for attachment in attachments:
+            interface_list.append(attachment.port_id)
+        return interface_list
+
 
     def _ping_server(self, host, pe, network_id, ip, timeout=60):
         """
@@ -444,7 +464,8 @@ class NeutronOvsAgentHa(NeutronHaTest):
         # get gateway host
         gtw, _ = self._get_agent_hosts(network=network_id)[0]
 
-        binary = 'neutron-openvswitch-agent'
+        # binary = 'neutron-openvswitch-agent'
+        binary = 'nova-compute'
         try:
             LOG.debug('stop l3 agent on %s host' % hosts[0])
 
@@ -461,6 +482,7 @@ class NeutronOvsAgentHa(NeutronHaTest):
                 raise Exception("failed accessing %s, network issue" % ip02)
 
             # stop ovs agent
+            LOG.info('stop nova-compute on %s' % hosts[0])
             pe.execute([hosts[0] + '*', 'cmd.run', 'systemctl stop %s' % binary])
 
             # intercept this exception
@@ -531,12 +553,17 @@ class NeutronMetadataAgentHa(NeutronHaTest):
         kwargs.update({'nics': [{"net-id": network_id}]})
         server = self._boot_server(image, flavor, **kwargs)
 
+        server_detail = getattr(self.admin_clients('nova').servers, "get")(server)
+        cmp_host = getattr(server_detail, 'OS-EXT-SRV-ATTR:host')
+
         binary = 'neutron-metadata-agent'
         index = 0
+        hosts = [i for i, _ in self._get_agent_hosts(binary='neutron-dhcp-agent')]
+        hosts.append(cmp_host)
         try:
-            hosts = self._get_agent_hosts(binary=binary)
             LOG.debug('metadata agents running on hosts: %s' % hosts)
-            for host, _ in hosts:
+            for host in hosts:
+                LOG.info('stop metadata-agent on host %s' % host)
                 index = index + 1
 
                 # stop l3-agent & remove associated snat namespace
@@ -545,7 +572,7 @@ class NeutronMetadataAgentHa(NeutronHaTest):
                 # server could have multiple NICs over multiple networks
                 # for simplicity assumes single interface is attached
                 ok = self._ping_from_server(server.networks.values()[0][0], username, password,
-                                            host, network_id, pe, cmd='curl', dest='169.254.169.254')
+                                            hosts[0], network_id, pe, cmd='curl', dest='169.254.169.254')
                 if not ok and index < len(hosts):
                     raise Exception('failed extracting userdata from metadata service')
 
@@ -561,7 +588,7 @@ class NeutronMetadataAgentHa(NeutronHaTest):
             time.sleep(10)
 
             # extracting metadata
-            ok = self._ping_from_server(server.networks[0].values()[0][0], username, password,
+            ok = self._ping_from_server(server.networks.values()[0][0], username, password,
                                         hosts[0], network_id, pe, cmd='curl', dest='169.254.169.254')
             if not ok:
                 raise Exception('failed acceessing metadata service')
@@ -569,4 +596,8 @@ class NeutronMetadataAgentHa(NeutronHaTest):
         except Exception as e:
             LOG.error(e)
             raise e
+        finally:
+            for host in hosts:
+                pe.execute([host+"*", 'cmd.run', 'systemctl restart %s' % binary])
+
 

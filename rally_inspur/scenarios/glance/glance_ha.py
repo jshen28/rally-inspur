@@ -29,6 +29,8 @@ class GlanceHa(GlanceBasic):
         index = 0
         try:
             for host in hosts:
+                index = index + 1
+                LOG.info('stop %s on host %s' % (binary, host))
 
                 pe.execute([host + "*", 'cmd.run', 'systemctl stop %s' % binary])
                 try:
@@ -37,11 +39,10 @@ class GlanceHa(GlanceBasic):
                     LOG.error(e)
                     if index < len(hosts):
                         raise Exception('glance-api failed')
-        except Exception as e:
-            LOG.error(e)
         finally:
             # restore glance-api services
             for host in hosts:
+                LOG.info('start %s on host %s' % (binary, host))
                 try:
                     pe.execute([host + "*", 'cmd.run', 'systemctl start %s' % binary])
                 except Exception as e:
@@ -64,7 +65,7 @@ class GlanceApiHa(GlanceHa):
         :param salt_api_uri: salt api uri
         :param salt_user_passwd: salt password
         """
-        self._run(salt_api_uri=salt_api_uri, salt_user_passwd=salt_user_passwd)
+        self._run()
 
     def _exec(self, **kwargs):
         self.glance.list_images()
@@ -106,7 +107,7 @@ class GlanceRegistryHa(GlanceHa):
             "min_disk": min_disk,
             "min_ram": min_ram
         })
-        self._run(salt_api_uri=salt_api_uri, salt_user_passwd=salt_user_passwd, binary='glance-registry', **kwargs)
+        self._run(binary='glance-registry', **kwargs)
 
     def _exec(self, **kwargs):
         image = self.glance.create_image(
@@ -117,5 +118,8 @@ class GlanceRegistryHa(GlanceHa):
             min_disk=kwargs.get('min_disk'),
             min_ram=kwargs.get('min_ram'),
             properties=kwargs.get('properties'))
+
+        if not image:
+            raise Exception('create image failed')
 
 
