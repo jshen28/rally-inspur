@@ -119,7 +119,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         for attachment in attachments:
             nova.servers.interface_detach(server, attachment.port_id)
             serverng = getattr(nova.servers, 'get')(server)
-            LOG.info('server %s status %s, task %s' % (server.id, serverng.status, serverng.task_state))
+            LOG.info('server %s status %s' % (server.id, serverng.status))
 
             import time
             time.sleep(10)
@@ -482,6 +482,7 @@ class NeutronOvsAgentHa(NeutronHaTest):
                 raise Exception("failed accessing %s, network issue" % ip02)
 
             # stop ovs agent
+            LOG.info('stop nova-compute on %s' % hosts[0])
             pe.execute([hosts[0] + '*', 'cmd.run', 'systemctl stop %s' % binary])
 
             # intercept this exception
