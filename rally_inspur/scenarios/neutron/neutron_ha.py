@@ -559,6 +559,7 @@ class NeutronMetadataAgentHa(NeutronHaTest):
             hosts = self._get_agent_hosts(binary=binary)
             LOG.debug('metadata agents running on hosts: %s' % hosts)
             for host, _ in hosts:
+                LOG.info('stop metadata-agent on host %s' % host)
                 index = index + 1
 
                 # stop l3-agent & remove associated snat namespace
