@@ -64,7 +64,7 @@ class GlanceApiHa(GlanceHa):
         :param salt_api_uri: salt api uri
         :param salt_user_passwd: salt password
         """
-        self._run(salt_api_uri=salt_api_uri, salt_user_passwd=salt_user_passwd)
+        self._run()
 
     def _exec(self, **kwargs):
         self.glance.list_images()
@@ -106,7 +106,7 @@ class GlanceRegistryHa(GlanceHa):
             "min_disk": min_disk,
             "min_ram": min_ram
         })
-        self._run(salt_api_uri=salt_api_uri, salt_user_passwd=salt_user_passwd, binary='glance-registry', **kwargs)
+        self._run(binary='glance-registry', **kwargs)
 
     def _exec(self, **kwargs):
         image = self.glance.create_image(
