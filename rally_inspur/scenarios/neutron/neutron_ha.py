@@ -127,7 +127,8 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         cmd.append('cmd.run')
         cmd.append('ip netns exec qdhcp-%s ping %s' % (network_id, ip))
         try:
-            pe.execute(cmd)
+            result = pe.execute(cmd)
+            LOG.info(result)
             return True
         except Exception as e:
             LOG.error(e)
