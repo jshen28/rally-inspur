@@ -135,6 +135,7 @@ class CreateAndAttachVolume(cinder_utils.CinderBasic,
         index = 0
         try:
             for host in hosts:
+                LOG.info('stop cinder-volume on %s ' % host)
                 index = index + 1
                 pe.execute([host + "*", 'cmd.run', 'systemctl stop cinder-volume'])
                 self._attach_volume(server, volume)
@@ -145,8 +146,14 @@ class CreateAndAttachVolume(cinder_utils.CinderBasic,
                 raise e
         finally:
             for host in hosts:
+                LOG.info('start cinder-volume on %s ' % host)
                 if host.state != 'up':
                     pe.execute([host + '*', 'cmd.run', 'systemctl start cinder-volume'])
+
+            import time
+            LOG.info('waiting for 15s before resuming')
+            time.sleep(15)
+
             self._attach_volume(server, volume)
             self._detach_volume(server, volume)
             self.cinder.delete_volume(volume)
