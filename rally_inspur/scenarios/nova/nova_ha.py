@@ -31,9 +31,11 @@ class NovaSchedulerHa(utils.NovaScenario):
         index = 0
         try:
             for node in ctl_nodes:
+                LOG.info('stop nova-scheduler on node %s' % node)
+                index = index + 1
                 cmd = [node, 'cmd.run', 'systemctl stop nova-scheduler']
                 pe.execute(cmd)
-                if index == (len(ctl_nodes) - 1):
+                if index == len(ctl_nodes):
                     try:
                         self._boot_server(image, flavor, **kwargs)
                     except Exception as e:
@@ -46,6 +48,7 @@ class NovaSchedulerHa(utils.NovaScenario):
             raise
         finally:
             for node in ctl_nodes:
+                LOG.info('restart noova-scheduler on node %s' % node)
                 try:
                     cmd = [node, 'cmd.run', 'systemctl start nova-scheduler']
                     pe.execute(cmd)
