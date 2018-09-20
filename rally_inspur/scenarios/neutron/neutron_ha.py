@@ -118,8 +118,22 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
 
         for attachment in attachments:
             nova.servers.interface_detach(server, attachment.port_id)
+
+            # it looks to me that interface detaching is synchronous rightnow
+            if attachment.port_id in self._list_interfaces(server):
+                raise Exception('detaching interface failed')
+
             if only_one:
                 break
+
+    def _list_interfaces(self, server):
+        nova = self.admin_clients('nova')
+        attachments = nova.servers.interface_list(server)
+
+        interface_list = []
+        for attachment in attachments:
+            interface_list.append(attachment.port_id)
+
 
     def _ping_server(self, host, pe, network_id, ip, timeout=60):
         """
@@ -444,7 +458,8 @@ class NeutronOvsAgentHa(NeutronHaTest):
         # get gateway host
         gtw, _ = self._get_agent_hosts(network=network_id)[0]
 
-        binary = 'neutron-openvswitch-agent'
+        # binary = 'neutron-openvswitch-agent'
+        binary = 'nova-compute'
         try:
             LOG.debug('stop l3 agent on %s host' % hosts[0])
 
