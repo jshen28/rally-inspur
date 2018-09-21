@@ -25,7 +25,7 @@ class KeepalivedHa(BasicNovaHa):
             "image": image,
             "flavor": flavor,
             "hosts": hosts,
-            "cmd": 'systemctl stop keepavlived',
+            "cmd": 'systemctl stop keepalived',
             'restore': 'systemctl start keepalived'
         })
         self._run(salt_api_uri=salt_api_url, salt_user_passwd=salt_passwd, **kwargs)
