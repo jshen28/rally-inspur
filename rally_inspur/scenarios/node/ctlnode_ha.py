@@ -33,6 +33,7 @@ class ControllerNodeHa(BasicNovaHa):
         index = 0
         try:
             for host in sorted(hosts):
+                LOG.info('stop ctl node on host %s' % host)
                 index = index + 1
                 pe.execute([host + "*", 'cmd.run',
                             "virsh list | grep -P 'ctl[0-9]{1,}' | awk '{print $2}' | xargs virsh destroy"])
@@ -45,6 +46,7 @@ class ControllerNodeHa(BasicNovaHa):
         finally:
 
             for host in sorted(hosts, reverse=True):
+                LOG.info('restart ctl on host %s' % host)
                 try:
                     pe.execute([host + "*", 'cmd.run',
                                 "virsh list --all | grep -P 'ctl[0-9]{1,}' | awk '{print $2}' | xargs virsh start"])
