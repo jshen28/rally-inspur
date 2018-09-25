@@ -16,6 +16,7 @@ from rally_inspur.pepper.cli import PepperExecutor
 from rally.task import validation, types
 from rally.task import utils as rally_utils
 from rally import exceptions
+from rally import utils as rally_utils
 from rally.task import atomic
 
 from rally_openstack import consts
@@ -202,7 +203,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         self.admin_clients("neutron").update_floatingip(
             fip["id"], {"floatingip": fip_update_dict}
         )
-        nova_utils.wait_for(server,
+        rally_utils.wait_for(server,
                        is_ready=self.check_ip_address(fip_ip),
                        update_resource=utils.get_from_manager())
         # Update server data
