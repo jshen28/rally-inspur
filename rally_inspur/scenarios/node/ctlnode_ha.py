@@ -50,6 +50,9 @@ class ControllerNodeHa(BasicNovaHa):
                 try:
                     pe.execute([host + "*", 'cmd.run',
                                 "virsh list --all | grep -P 'ctl[0-9]{1,}' | awk '{print $2}' | xargs virsh start"])
+                    import time
+                    LOG.info('sleep for 60s')
+                    time.sleep(60)
                 except Exception as e:
                     LOG.error(e)
                     pass
