@@ -150,7 +150,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
             interface_list.append(attachment.port_id)
         return interface_list
 
-    def _create_and_associate_floating_ip(self, server, **create_floating_ip_args):
+    def _create_and_associate_floating_ip_admin(self, server, **create_floating_ip_args):
         """
         create and associate floating ip to specified server
         :param server:
@@ -160,11 +160,11 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
 
         address = network_wrapper.wrap(self.admin_clients, self).create_floating_ip(
             tenant_id=server.tenant_id, **create_floating_ip_args)
-        self._associate_floating_ip(server, address["ip"])
+        self._associate_floating_ip_admin(server, address["ip"])
         return address['ip']
 
     @atomic.action_timer("nova.associate_floating_ip")
-    def _associate_floating_ip(self, server, address, fixed_address=None):
+    def _associate_floating_ip_admin(self, server, address, fixed_address=None):
         """Add floating IP to an instance
 
         :param server: The :class:`Server` to add an IP to.
@@ -185,7 +185,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
                 "dict-like representation of floating ip. Transmitting a "
                 "string with just an IP is deprecated.")
             with atomic.ActionTimer(self, "neutron.list_floating_ips"):
-                all_fips = self.clients("neutron").list_floatingips(
+                all_fips = self.admin_clients("neutron").list_floatingips(
                     tenant_id=self.context["tenant"]["id"])
             filtered_fip = [f for f in all_fips["floatingips"]
                             if f["floating_ip_address"] == address]
@@ -199,7 +199,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         fip_update_dict = {"port_id": port["id"]}
         if fixed_address:
             fip_update_dict["fixed_ip_address"] = fixed_address
-        self.clients("neutron").update_floatingip(
+        self.admin_lients("neutron").update_floatingip(
             fip["id"], {"floatingip": fip_update_dict}
         )
         utils.wait_for(server,
@@ -556,12 +556,12 @@ class NeutronL3AgentFloatingipHa(NeutronHaTest):
         kwargs.update({'nics': [{"net-id": network_id}],
                        "availability-zone": ":%s" % hosts[0]})
         server = self._boot_server_admin(image, flavor, **kwargs)
-        ip = self._create_and_associate_floating_ip(server, **create_floating_ip_args)
+        ip = self._create_and_associate_floating_ip_admin(server, **create_floating_ip_args)
 
         kwargs.update({'nics': [{"net-id": network_id}],
                        "availability-zone": ":%s" % hosts[1]})
         server02 = self._boot_server_admin(image, flavor, **kwargs)
-        ip02 = self._create_and_associate_floating_ip(server, **create_floating_ip_args)
+        ip02 = self._create_and_associate_floating_ip_admin(server, **create_floating_ip_args)
 
         binary = 'neutron-l3-agent'
         index = 0
