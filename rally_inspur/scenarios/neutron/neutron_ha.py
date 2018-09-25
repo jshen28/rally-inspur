@@ -204,7 +204,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         )
         rally_utils.wait_for(server,
                        is_ready=self.check_ip_address(fip_ip),
-                       update_resource=utils.get_from_manager())
+                       update_resource=rally_utils.get_from_manager())
         # Update server data
         server.addresses = server.manager.get(server.id).addresses
 
