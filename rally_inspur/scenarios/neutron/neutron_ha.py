@@ -14,9 +14,8 @@
 #    under the License.
 from rally_inspur.pepper.cli import PepperExecutor
 from rally.task import validation, types
-from rally.task import utils as rally_utils
 from rally import exceptions
-from rally import utils as rally_utils
+from rally.task import utils as rally_utils
 from rally.task import atomic
 
 from rally_openstack import consts
