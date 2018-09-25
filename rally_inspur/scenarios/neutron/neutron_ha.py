@@ -255,7 +255,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
 
         cmd = 'sshpass -p %s ssh %s@%s -o ConnectTimeout=60 -o UserKnownHostsFile=/dev/null ' \
               '-o StrictHostKeyChecking=no "echo HelloWorld"' % (password, username, ip)
-        p = subprocess.Popen(*shlex.split(cmd), stdout=subprocess.PIPE)
+        p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE)
         return_tuple = p.communicate()
 
         LOG.debug('return tuple: %s' % return_tuple)
