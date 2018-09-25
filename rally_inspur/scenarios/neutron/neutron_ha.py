@@ -15,12 +15,18 @@
 from rally_inspur.pepper.cli import PepperExecutor
 from rally.task import validation, types
 from rally.task import utils as rally_utils
+from rally import exceptions
+from rally.task import atomic
 
 from rally_openstack import consts
 from rally_openstack import scenario
 from rally_openstack.scenarios.neutron import utils
 from rally_openstack.scenarios.nova import utils as nova_utils
+from rally_openstack.wrappers import network as network_wrapper
 from rally.common import cfg, logging
+
+import shlex
+import subprocess
 
 CONF = cfg.CONF
 
@@ -112,6 +118,9 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         )
         return server
 
+    def _delete_server_admin(self, server):
+        pass
+
     def _detach_nic(self, server, only_one=True):
         nova = self.admin_clients('nova')
         attachments = nova.servers.interface_list(server)
@@ -140,6 +149,63 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
             interface_list.append(attachment.port_id)
         return interface_list
 
+    def _create_and_associate_floating_ip(self, server, **create_floating_ip_args):
+        """
+        create and associate floating ip to specified server
+        :param server:
+        :param create_floating_ip_args:
+        :return:
+        """
+
+        address = network_wrapper.wrap(self.admin_clients, self).create_floating_ip(
+            tenant_id=server.tenant_id, **create_floating_ip_args)
+        self._associate_floating_ip(server, address["ip"])
+        return address['ip']
+
+    @atomic.action_timer("nova.associate_floating_ip")
+    def _associate_floating_ip(self, server, address, fixed_address=None):
+        """Add floating IP to an instance
+
+        :param server: The :class:`Server` to add an IP to.
+        :param address: The dict-like representation of FloatingIP to add
+            to the instance
+        :param fixed_address: The fixedIP address the FloatingIP is to be
+               associated with (optional)
+        """
+        with atomic.ActionTimer(self, "neutron.list_ports"):
+            ports = self.admin_clients("neutron").list_ports(device_id=server.id)
+            port = ports["ports"][0]
+
+        fip = address
+        if not isinstance(address, dict):
+            LOG.warning(
+                "The argument 'address' of "
+                "NovaScenario._associate_floating_ip method accepts a "
+                "dict-like representation of floating ip. Transmitting a "
+                "string with just an IP is deprecated.")
+            with atomic.ActionTimer(self, "neutron.list_floating_ips"):
+                all_fips = self.clients("neutron").list_floatingips(
+                    tenant_id=self.context["tenant"]["id"])
+            filtered_fip = [f for f in all_fips["floatingips"]
+                            if f["floating_ip_address"] == address]
+            if not filtered_fip:
+                raise exceptions.NotFoundException(
+                    "There is no floating ip with '%s' address." % address)
+            fip = filtered_fip[0]
+        # the first case: fip object is returned from network wrapper
+        # the second case: from neutronclient directly
+        fip_ip = fip.get("ip", fip.get("floating_ip_address", None))
+        fip_update_dict = {"port_id": port["id"]}
+        if fixed_address:
+            fip_update_dict["fixed_ip_address"] = fixed_address
+        self.clients("neutron").update_floatingip(
+            fip["id"], {"floatingip": fip_update_dict}
+        )
+        utils.wait_for(server,
+                       is_ready=self.check_ip_address(fip_ip),
+                       update_resource=utils.get_from_manager())
+        # Update server data
+        server.addresses = server.manager.get(server.id).addresses
 
     def _ping_server(self, host, pe, network_id, ip, timeout=60):
         """
@@ -169,6 +235,29 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         except Exception as e:
             LOG.error(e)
             return False
+
+    def _ssh_server(self, ip, username='cirros', password='gocubsgo'):
+        """
+        ssh ip & print helloworld
+        :param ip:
+        :param username:
+        :param password:
+        :return:
+        """
+
+        # subprocess.Popen will throw an error if command does not exist
+        p = subprocess.Popen(['apt', 'install', '-y', 'sshpass'], stdout=subprocess.PIPE)
+        return_tuple = p.communicate()
+
+        if p.returncode != 0:
+            raise Exception(return_tuple[1])
+
+        cmd = 'sshpass -p %s ssh %s@%s -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no "echo HelloWorld"' % (password, username, ip)
+        p = subprocess.Popen(*shlex.split(cmd), stdout=subprocess.PIPE)
+        return_tuple = p.communicate()
+
+        if p.returncode != 0:
+            raise Exception(return_tuple[1])
 
     def _ping_from_server(self, ip, username, password, host, network_id, pe, cmd='ping -c 3', dest="114.114.114.114"):
         """
@@ -237,12 +326,13 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         cmd.append("ps -ef | grep %s | awk '{print $2}' | xargs kill -9 " % network_id)
         pe.execute(cmd)
 
-    def _get_compute_host(self):
-        """
-        list all nova-compute hosts
-        :return:
-        """
-        return [i.host for i in self._list_services(binary='nova-compute')]
+
+def _get_compute_host(self):
+    """
+    list all nova-compute hosts
+    :return:
+    """
+    return [i.host for i in self._list_services(binary='nova-compute')]
 
 
 @validation.add("required_services",
@@ -418,6 +508,97 @@ class NeutronL3AgentHa(NeutronHaTest):
                     pe.execute([host + "*", 'cmd.run', 'systemctl start %s' % binary])
             except Exception as e:
                 LOG.error(e)
+
+
+@types.convert(image={"type": "glance_image"},
+               flavor={"type": "nova_flavor"})
+@validation.add("image_valid_on_flavor", flavor_param="flavor",
+                image_param="image")
+@validation.add("required_services",
+                services=[consts.Service.NEUTRON, consts.Service.NOVA])
+@scenario.configure(context={"cleanup@openstack": ["nova", "neutron"]},
+                    name="InspurPlugin.neutron_l3_agent_floatingip_ha",
+                    platform="openstack")
+class NeutronL3AgentFloatingipHa(NeutronHaTest):
+
+    def run(self, image, flavor, username='cirros', password='cubswin:)', network_create_args=None, router_create_args=None,
+            salt_api_uri=CONF.salt_api_uri, salt_user_passwd=CONF.salt_passwd, create_floating_ip_args=None, **kwargs):
+        """verify neutron l3 agent availability
+
+        :param image: image name (will be auto converted to id)
+        :param flavor: flavor name (will be auto converted to id)
+        :param username: vm username
+        :param password: vm password
+        :param network_create_args: dict, POST /v2.0/networks request options
+        :param router_create_args: dict
+        :param salt_api_uri
+        :param salt_user_passwd
+        """
+
+        pe = PepperExecutor(uri=salt_api_uri, passwd=salt_user_passwd)
+        hosts = [i for i in self._get_compute_host() if i.startswith('cmp')]
+
+        if len(hosts) < 2:
+            raise Exception('Not enough compute host')
+
+        # create network & subnet
+        network, subnets = self._create_network_and_subnets(network_create_args or {})
+
+        # create router and add interface
+        router = self._create_router(router_create_args or {}, )
+        self._add_interface_router(subnets[0]['subnet'], router['router'])
+
+        # save router id & network id
+        router_id = router['router']['id']
+        network_id = network.get('network', {}).get('id')
+
+        # boot server on network
+        kwargs.update({'nics': [{"net-id": network_id}],
+                       "availability-zone": ":%s" % hosts[0]})
+        server = self._boot_server_admin(image, flavor, **kwargs)
+        ip = self._create_and_associate_floating_ip(server, **create_floating_ip_args)
+
+        kwargs.update({'nics': [{"net-id": network_id}],
+                       "availability-zone": ":%s" % hosts[1]})
+        server02 = self._boot_server_admin(image, flavor, **kwargs)
+        ip02 = self._create_and_associate_floating_ip(server, **create_floating_ip_args)
+
+        binary = 'neutron-l3-agent'
+        index = 0
+        try:
+            LOG.debug('l3 agents %s host router %s' % (hosts, router_id))
+            LOG.info('stop l3 agent on host %s' % (hosts[0]))
+            index = index + 1
+
+            # stop l3-agent & remove associated snat namespace
+            self._ssh_server(ip, username=username, password=password)
+            pe.execute([hosts[0] + '*', 'cmd.run', 'systemctl stop %s' % binary])
+            self._remove_namespace(hosts[0], pe, router_id, ns_type='router')
+            try:
+                # floating ip as well as fixed ip will not be accessible outside of
+                # vxlan network
+                self._ssh_server(ip, username=username, password=password)
+            except Exception:
+                pass
+            else:
+                # throw exception if there is no exception reported
+                raise Exception('should not be able to log in')
+
+            self._ssh_server(ip02, username=username, password=password)
+        except Exception as e:
+            LOG.error(e)
+            raise e
+        finally:
+            try:
+                pe.execute([hosts[0] + "*", 'cmd.run', 'systemctl start %s' % binary])
+            except Exception as e:
+                LOG.error(e)
+            try:
+                # delete server created by admin user
+                self._delete_server_admin(server)
+                self._delete_server_admin(server02)
+            except Exception:
+                pass
 
 
 @types.convert(image={"type": "glance_image"},
