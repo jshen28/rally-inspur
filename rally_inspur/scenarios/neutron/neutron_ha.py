@@ -204,7 +204,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         )
         rally_utils.wait_for(server,
                        is_ready=self.check_ip_address(fip_ip),
-                       update_resource=rally_utils.get_from_manager())
+                       update_resource=utils.get_from_manager())
         # Update server data
         server.addresses = server.manager.get(server.id).addresses
 
@@ -254,7 +254,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
             raise Exception(return_tuple[1])
 
         cmd = 'sshpass -p %s ssh %s@%s -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no "echo HelloWorld"' % (password, username, ip)
-        p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE)
+        p = subprocess.Popen(*shlex.split(cmd), stdout=subprocess.PIPE)
         return_tuple = p.communicate()
 
         if p.returncode != 0:
@@ -561,12 +561,14 @@ class NeutronL3AgentFloatingipHa(NeutronHaTest):
         kwargs.update({'nics': [{"net-id": network_id}],
                        "availability-zone": ":%s" % hosts[1]})
         server02 = self._boot_server_admin(image, flavor, **kwargs)
-        ip02 = self._create_and_associate_floating_ip_admin(server02, **create_floating_ip_args)
+        ip02 = self._create_and_associate_floating_ip_admin(server, **create_floating_ip_args)
 
         binary = 'neutron-l3-agent'
+        index = 0
         try:
             LOG.debug('l3 agents %s host router %s' % (hosts, router_id))
             LOG.info('stop l3 agent on host %s' % (hosts[0]))
+            index = index + 1
 
             # stop l3-agent & remove associated snat namespace
             self._ssh_server(ip, username=username, password=password)
@@ -576,8 +578,7 @@ class NeutronL3AgentFloatingipHa(NeutronHaTest):
                 # floating ip as well as fixed ip will not be accessible outside of
                 # vxlan network
                 self._ssh_server(ip, username=username, password=password)
-            except Exception as e:
-                LOG.error(e)
+            except Exception:
                 pass
             else:
                 # throw exception if there is no exception reported
