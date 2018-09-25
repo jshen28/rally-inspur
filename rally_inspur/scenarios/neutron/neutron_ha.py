@@ -253,10 +253,12 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         if p.returncode != 0:
             raise Exception(return_tuple[1])
 
-        cmd = 'sshpass -p %s ssh %s@%s -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no "echo HelloWorld"' % (password, username, ip)
+        cmd = 'sshpass -p %s ssh %s@%s -o ConnectTimeout=60 -o UserKnownHostsFile=/dev/null ' \
+              '-o StrictHostKeyChecking=no "echo HelloWorld"' % (password, username, ip)
         p = subprocess.Popen(*shlex.split(cmd), stdout=subprocess.PIPE)
         return_tuple = p.communicate()
 
+        LOG.debug('return tuple: %s' % return_tuple)
         if p.returncode != 0:
             raise Exception(return_tuple[1])
 
