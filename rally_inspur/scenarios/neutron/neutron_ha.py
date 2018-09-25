@@ -561,14 +561,12 @@ class NeutronL3AgentFloatingipHa(NeutronHaTest):
         kwargs.update({'nics': [{"net-id": network_id}],
                        "availability-zone": ":%s" % hosts[1]})
         server02 = self._boot_server_admin(image, flavor, **kwargs)
-        ip02 = self._create_and_associate_floating_ip_admin(server, **create_floating_ip_args)
+        ip02 = self._create_and_associate_floating_ip_admin(server02, **create_floating_ip_args)
 
         binary = 'neutron-l3-agent'
-        index = 0
         try:
             LOG.debug('l3 agents %s host router %s' % (hosts, router_id))
             LOG.info('stop l3 agent on host %s' % (hosts[0]))
-            index = index + 1
 
             # stop l3-agent & remove associated snat namespace
             self._ssh_server(ip, username=username, password=password)
@@ -578,8 +576,8 @@ class NeutronL3AgentFloatingipHa(NeutronHaTest):
                 # floating ip as well as fixed ip will not be accessible outside of
                 # vxlan network
                 self._ssh_server(ip, username=username, password=password)
-            except Exception:
-                pass
+            except Exception as e:
+                LOG.error(e)
             else:
                 # throw exception if there is no exception reported
                 raise Exception('should not be able to log in')
