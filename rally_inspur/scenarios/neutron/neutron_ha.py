@@ -199,7 +199,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         fip_update_dict = {"port_id": port["id"]}
         if fixed_address:
             fip_update_dict["fixed_ip_address"] = fixed_address
-        self.admin_lients("neutron").update_floatingip(
+        self.admin_clients("neutron").update_floatingip(
             fip["id"], {"floatingip": fip_update_dict}
         )
         utils.wait_for(server,
