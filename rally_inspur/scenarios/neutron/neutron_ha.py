@@ -119,7 +119,8 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         return server
 
     def _delete_server_admin(self, server):
-        pass
+        # (fixme) wait for successfully deleting server
+        self.admin_clients('nova').servers.delete(server)
 
     def _detach_nic(self, server, only_one=True):
         nova = self.admin_clients('nova')
@@ -326,13 +327,12 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         cmd.append("ps -ef | grep %s | awk '{print $2}' | xargs kill -9 " % network_id)
         pe.execute(cmd)
 
-
-def _get_compute_host(self):
-    """
-    list all nova-compute hosts
-    :return:
-    """
-    return [i.host for i in self._list_services(binary='nova-compute')]
+    def _get_compute_host(self):
+        """
+        list all nova-compute hosts
+        :return:
+        """
+        return [i.host for i in self._list_services(binary='nova-compute')]
 
 
 @validation.add("required_services",
