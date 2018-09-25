@@ -202,7 +202,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
         self.admin_clients("neutron").update_floatingip(
             fip["id"], {"floatingip": fip_update_dict}
         )
-        utils.wait_for(server,
+        nova_utils.wait_for(server,
                        is_ready=self.check_ip_address(fip_ip),
                        update_resource=utils.get_from_manager())
         # Update server data
