@@ -186,7 +186,7 @@ class NeutronHaTest(utils.NeutronScenario, nova_utils.NovaScenario):
                 "string with just an IP is deprecated.")
             with atomic.ActionTimer(self, "neutron.list_floating_ips"):
                 all_fips = self.admin_clients("neutron").list_floatingips(
-                    tenant_id=self.context["tenant"]["id"])
+                    tenant_id=server.tenant_id)
             filtered_fip = [f for f in all_fips["floatingips"]
                             if f["floating_ip_address"] == address]
             if not filtered_fip:
